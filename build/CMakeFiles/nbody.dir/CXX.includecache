@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jhona/documents/uni/hp_gpu/project/nbody_memory_layout_student_project/nbody.cpp
+chrono
+-
+iostream
+-
+random
+-
+vector
+-
+

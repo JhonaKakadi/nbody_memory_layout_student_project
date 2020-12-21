@@ -1,0 +1,3 @@
+/home/jhona/documents/uni/hp_gpu/project/nbody_memory_layout_student_project/build/CMakeFiles/edit_cache.dir
+/home/jhona/documents/uni/hp_gpu/project/nbody_memory_layout_student_project/build/CMakeFiles/rebuild_cache.dir
+/home/jhona/documents/uni/hp_gpu/project/nbody_memory_layout_student_project/build/CMakeFiles/nbody.dir
