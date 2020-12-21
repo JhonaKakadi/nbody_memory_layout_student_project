@@ -8,7 +8,8 @@ struct particle {
 };
 
 inline void aos_pp_interaction(struct particle* p_i, struct particle* p_j) {
-
+	// still not sure if i want to stick with the data structure
+	// so i didn't implement it yet
 }
 
 
@@ -20,8 +21,8 @@ inline void aos_pp_interaction(struct particle* p_i, struct particle* p_j) {
 __global__ void aos_update(particle* particles) {
 	for (int i = 0; i < ( sizeof(particles) / sizeof(struct particle) ); ++i) {
 		for (int j = i+1; j < ( sizeof(particles) / sizeof(struct particle) ); ++j) {
-			aos_pp_interaction(particles[i], particles[j]);
-			aos_pp_interaction(particles[j], particles[i]);
+			aos_pp_interaction(&particles[i], &particles[j]);
+			aos_pp_interaction(&particles[j], &particles[i]);
 		}
 	}
 }
@@ -45,7 +46,16 @@ int aos_run(void) {
 	struct particle particles[kProblemSize];
 	
 	// fill array with structs of random values
-	//for (int i = 0; i < 
+	//for (int i = 0; i < ( sizeof(particles) / sizeof(struct particle) ); ++i) {
+		for (int j = 0; j < 3; ++j) {
+			particles[i].pos[j] = 0;
+		}
+		particles[i].mass = 0;
+		
+		// temporarily it's still filled with zero
+		// todo: find rng with normaldistribution
+		// or just use random?
+	}
 	
 	// start event 
 	
