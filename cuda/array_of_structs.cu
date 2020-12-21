@@ -42,6 +42,16 @@ __global__ void aos_move(particle* particles) {
 
 int aos_run(void) {
 
+	// init event management
+	cudaEvent_t start_update, stop_update;
+	cudaEventCreate(&start_update);
+	cudaEventCreate(&stop_update);
+	
+	cudaEvent_t start_move, stop_move;
+	cudaEventCreate(&start_move);
+	cudaEventCreate(&stop_move);
+
+
 	// init array
 	struct particle particles[kProblemSize];
 	
@@ -57,22 +67,30 @@ int aos_run(void) {
 		// or just use random?
 	}
 	
-	// start event 
-	
-	// loop with kSteps
+	// loop with kSteps to GPU-compute
 	//		-> update
 	//		-> run
+	// with time measurement (events)
+	//
 	for (int s = 0; s < kSteps; ++s) {
-	
+		
+		cudaEventRecord(start_update);
 		aos_update<<<1,1>>>(particles);
 		HANDLE_ERROR(cudaGetLastError());
+		cudaEventRecord(stop_update);
 		
+		cudaEventRecord(start_move);
 		aos_move<<<1,1>>>(particles);
 		HANDLE_ERROR(cudaGetLastError());
+		cudaEventRecord(stop_move);
 	}
+	cudaEventSynchronize(stop_update);
+	cudaEventSynchronize(start_move);
 	
-	// stop event
+	float time_update, time_move;
+	cudaEventElapsedTime(&time_update, start_update, stop_update);
+	cudaEventElapsedTime(&time_move, start_move, stop_move);
 	
 	// print time
-	//printf("AoS\t%f\t%f\n", ..., ...);
+	printf("AoS\t%f\t%f\n", time_update, time_move);
 }
