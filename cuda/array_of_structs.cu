@@ -17,7 +17,7 @@ __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle*
 	
 	const float dist_sqr = EPS2 + distance_sqr_x + distance_sqr_y + distance_sqr_z;
 	const float dist_sixth = dist_sqr * dist_sqr * dist_sqr;
-	const float inv_dist_cube = 1.0f / sqrt(double(dist_sixth));
+	const float inv_dist_cube = 1.0f / sqrt(double(dist_sixth));		// will there be performance issues with double?
 	const float sts = p_j->mass * inv_dist_cube * TIMESTEP;
 	
 	p_i->vel[0] += distance_sqr_x * sts;
