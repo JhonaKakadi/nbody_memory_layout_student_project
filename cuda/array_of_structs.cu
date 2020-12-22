@@ -60,7 +60,7 @@ void aos_run(void) {
 
 	// init array
 	struct particle particles_host[kProblemSize];
-	struct particle* particles_device[kProblemSize];
+	struct particle* particles_device;
 	
 	// fill array with structs of random values
 	for (int i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {
