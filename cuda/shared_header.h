@@ -1,3 +1,6 @@
+#ifndef SHARED_HEADER_H
+#define SHARED_HEADER_H
+
 // contains global constants
 #include "cuda_runtime.h"
 #include "cuda_runtime_api.h"
@@ -37,3 +40,5 @@ static void handleCudaError(cudaError_t err, const char* file, int line) {
 		exit(EXIT_FAILURE);
 	}
 }
+
+#endif

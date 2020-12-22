@@ -11,7 +11,7 @@ set(CMAKE_CUDA_STANDARD 14)
 
 add_executable(nbody main.cu)
 target_compile_options(${PROJECT_NAME} PRIVATE
-       # -fno-math-errno # sqrt prevents vectorization otherwise
+        #-fno-math-errno # sqrt prevents vectorization otherwise
         #-mavx512f # if your system does not support his, use -march=native
         #-O3 #optimize O3 default
         #-m64 # flag for 64 bit architecture
