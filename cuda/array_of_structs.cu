@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include "shared_header.h"
 
 struct particle {
@@ -10,8 +11,18 @@ struct particle {
 
 
 __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle* p_j) {
-	// still not sure if i want to stick with the data structure
-	// so i didn't implement it yet
+	float distance_sqr_x = (p_i.pos[0] - p_j.pos[0]) * (p_i.pos[0] - p_j.pos[0]);
+	float distance_sqr_y = (p_i.pos[1] - p_j.pos[1]) * (p_i.pos[1] - p_j.pos[1]);
+	float distance_sqr_z = (p_i.pos[2] - p_j.pos[2]) * (p_i.pos[2] - p_j.pos[2]);
+	
+	const float dist_sqr = EPS2 + distance_sqr_x + distance_sqr_y + distance_sqr_z;
+	const float dist_sixth = dist_sqr * dist_sqr * dist_sqr;
+	const float inv_dist_cube = 1.0f / sqrt(double(dist_sixth));
+	const float sts = p_j.mass * inv_dist_cube * TIMESTEP;
+	
+	p_i.vel[0] += distance_sqr_x * sts;
+	p_i.vel[1] += distance_sqr_y * sts;
+	p_i.vel[2] += distance_sqr_z * sts;
 }
 
 
@@ -65,11 +76,11 @@ void aos_run(void) {
 	// fill array with structs of random values
 	for (int i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {
 		for (int j = 0; j < 3; ++j) {
-			particles_host[i].pos[j] = 0;
+			particles_host[i].pos[j] = (float)rand();
+			particles_host[i].vel[j] = (float)rand() / 10.0f;
 		}
-		particles_host[i].mass = 0;
+		particles_host[i].mass = (float)rand() / 100.0f;
 		
-		// temporarily it's still filled with zero
 		// todo: find rng with normaldistribution
 		// or just use random?
 	}
