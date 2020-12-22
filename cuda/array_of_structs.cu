@@ -131,7 +131,7 @@ void aos_run(void) {
 	cudaEventElapsedTime(&time_move, start_move, stop_move);
 	
 	// print time
-	printf("AoS\t%f\t%f\n", time_update, time_move);
+	printf("AoS\t%fms\t%fms\n", time_update, time_move);
 	
 	
 	

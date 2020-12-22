@@ -59,7 +59,7 @@ void print_cuda_infos(int device, bool mem_props) {
 
     // Block and Thread Infos-Limits
     printf("Warp-size: %d\n", props.warpSize);
-    printf("One Block have %d Registers and one SM can handle %d Threads\n", props.regsPerBlock,
+    printf("One Block has %d Registers and one SM can handle %d Threads\n", props.regsPerBlock,
            props.maxThreadsPerMultiProcessor);
     printf("One Block can handle: %d Threads\n", props.maxThreadsPerBlock);
     printf("While one Block can have the dimensions: X = %d Y = %d Z = %d\n", props.maxThreadsDim[0],
