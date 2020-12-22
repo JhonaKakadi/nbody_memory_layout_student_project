@@ -59,6 +59,9 @@ __global__ void soa_move(float *posx, float *posy, float *posz, float *velx,
     }
 }
 
+
+// Todo create struct to simplyfy code 
+
 void soa_run() {
 
     float *posx_h = (float *) malloc(sizeof(float) * kProblemSize);
@@ -113,8 +116,8 @@ void soa_run() {
     HANDLE_ERROR(cudaEventCreate(&end2));
 
     for (std::size_t s = 0; s < STEPS; ++s) {
+        
         HANDLE_ERROR(cudaEventRecord(start, 0));
-
         soa_update<<<kProblemSize, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
         cudaEventRecord(end, 0);
 
@@ -122,19 +125,29 @@ void soa_run() {
         soa_move<<<(kProblemSize+1023) / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
         cudaEventRecord(end2, 0);
         HANDLE_ERROR(cudaEventSynchronize(end2));
-        // HANDLE_LAST_ERROR;
+       
         float time;
         cudaEventElapsedTime(&time, start, end);
         float time2;
         cudaEventElapsedTime(&time2, start2, end2);
-        std::cout << "SoA\t" << time / 1 << "ms" << '\t' << time2 / 1 << "ms"
-                  << '\n';
+        std::cout << "SoA\t" << time << "ms" << '\t' << time2 << "ms" << '\n';
     }
-    cudaMemcpy(posx_h, posx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(posy_h, posy_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(posz_h, posz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(velx_h, velx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(vely_h, vely_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(velz_h, velz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(mass_h, mass_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
+    HANDLE_ERROR(cudaMemcpy(posx_h, posx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_ERROR(cudaMemcpy(posy_h, posy_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_ERROR(cudaMemcpy(posz_h, posz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_ERROR(cudaMemcpy(velx_h, velx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_ERROR(cudaMemcpy(vely_h, vely_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_ERROR(cudaMemcpy(velz_h, velz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_ERROR(cudaMemcpy(mass_h, mass_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost));
+
+    // Free mem
+    HANDLE_ERROR(cudaFree(posx_d));
+    HANDLE_ERROR(cudaFree(posy_d));
+    HANDLE_ERROR(cudaFree(posz_d));
+    HANDLE_ERROR(cudaFree(velx_d));
+    HANDLE_ERROR(cudaFree(vely_d));
+    HANDLE_ERROR(cudaFree(velz_d));
+    HANDLE_ERROR(cudaFree(mass_d));
+    // maybe reset
+    // cudaDeviceReset();
 }
