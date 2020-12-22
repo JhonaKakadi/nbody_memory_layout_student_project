@@ -11,18 +11,18 @@ struct particle {
 
 
 __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle* p_j) {
-	float distance_sqr_x = (p_i->pos[0] - p_j->pos[0]) * (p_i->pos[0] - p_j->pos[0]);
-	float distance_sqr_y = (p_i->pos[1] - p_j->pos[1]) * (p_i->pos[1] - p_j->pos[1]);
-	float distance_sqr_z = (p_i->pos[2] - p_j->pos[2]) * (p_i->pos[2] - p_j->pos[2]);
+	float distance_sqr_x = (p_i.pos[0] - p_j.pos[0]) * (p_i.pos[0] - p_j.pos[0]);
+	float distance_sqr_y = (p_i.pos[1] - p_j.pos[1]) * (p_i.pos[1] - p_j.pos[1]);
+	float distance_sqr_z = (p_i.pos[2] - p_j.pos[2]) * (p_i.pos[2] - p_j.pos[2]);
 	
 	const float dist_sqr = EPS2 + distance_sqr_x + distance_sqr_y + distance_sqr_z;
 	const float dist_sixth = dist_sqr * dist_sqr * dist_sqr;
 	const float inv_dist_cube = 1.0f / sqrt(double(dist_sixth));
-	const float sts = p_j->mass * inv_dist_cube * TIMESTEP;
+	const float sts = p_j.mass * inv_dist_cube * TIMESTEP;
 	
-	p_i->vel[0] += distance_sqr_x * sts;
-	p_i->vel[1] += distance_sqr_y * sts;
-	p_i->vel[2] += distance_sqr_z * sts;
+	p_i.vel[0] += distance_sqr_x * sts;
+	p_i.vel[1] += distance_sqr_y * sts;
+	p_i.vel[2] += distance_sqr_z * sts;
 }
 
 
