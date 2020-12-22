@@ -13,11 +13,14 @@ __global__ void soa_update(float *posx, float *posy, float *posz, float *velx, f
     x_values[other] = 0;
     y_values[other] = 0;
     z_values[other] = 0;
+    float posix = posx[id];
+    float posiy = posy[id];
+    float posiz = posz[id];
 
     for (std::size_t j = other; j < PROBLEMSIZE; j += 1024) {
-        const float xdistance = posx[id] - posx[j];
-        const float ydistance = posy[id] - posy[j];
-        const float zdistance = posz[id] - posz[j];
+        const float xdistance = posix - posx[j];
+        const float ydistance = posiy - posy[j];
+        const float zdistance = posiz - posz[j];
         const float xdistanceSqr = xdistance * xdistance;
         const float ydistanceSqr = ydistance * ydistance;
         const float zdistanceSqr = zdistance * zdistance;
@@ -26,10 +29,11 @@ __global__ void soa_update(float *posx, float *posy, float *posz, float *velx, f
         const float invDistCube = 1.0f / std::sqrt(distSixth);
         const float sts = mass[j] * invDistCube * TIMESTEP;
         x_values[other] += xdistanceSqr * sts;
-        y_values[other] += xdistanceSqr * sts;
-        z_values[other] += xdistanceSqr * sts;
+        y_values[other] += ydistanceSqr * sts;
+        z_values[other] += zdistanceSqr * sts;
     }
     // reduce to one
+    // Todo improve with half steps
     SYNC_THREADS;
     if (id == 0) {
         for (int j = 1; j < 1024; j++) {
@@ -48,10 +52,10 @@ __global__ void soa_update(float *posx, float *posy, float *posz, float *velx, f
 __global__ void soa_move(float *posx, float *posy, float *posz, float *velx,
                          float *vely, float *velz) {
     int id = LINEAR_ID;
-    for (std::size_t i = id; i < kProblemSize; i += 1024) {
-        posx[i] += velx[i] * TIMESTEP;
-        posy[i] += vely[i] * TIMESTEP;
-        posz[i] += velz[i] * TIMESTEP;
+    if ( id < kProblemSize) {
+        posx[id] += velx[id] * TIMESTEP;
+        posy[id] += vely[id] * TIMESTEP;
+        posz[id] += velz[id] * TIMESTEP;
     }
 }
 
@@ -115,7 +119,7 @@ void soa_run() {
         cudaEventRecord(end, 0);
 
         cudaEventRecord(start2, 0);
-        soa_move<<<kProblemSize / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
+        soa_move<<<(kProblemSize+1023) / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
         cudaEventRecord(end2, 0);
         HANDLE_ERROR(cudaEventSynchronize(end2));
         // HANDLE_LAST_ERROR;
