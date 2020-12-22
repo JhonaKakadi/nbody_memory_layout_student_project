@@ -11,9 +11,9 @@ __global__ void soa_update(float* posx, float* posy, float* posz, float* velx, f
     __shared__ float x_values[1024];
     __shared__ float y_values[1024];
     __shared__ float z_values[1024];
-    x_values[id] = 0;
-    y_values[id] = 0;
-    z_values[id] = 0;
+    x_values[other] = 0;
+    y_values[other] = 0;
+    z_values[other] = 0;
 
 
     for (std::size_t j = other; j < PROBLEMSIZE; j += 1024) {
@@ -26,15 +26,14 @@ __global__ void soa_update(float* posx, float* posy, float* posz, float* velx, f
         const float distSqr = EPS2 + xdistanceSqr + ydistanceSqr + zdistanceSqr;
         const float distSixth = distSqr * distSqr * distSqr;
         const float invDistCube = 1.0f / std::sqrt(distSixth);
-        const float sts = mass[other] * invDistCube * TIMESTEP;
-        x_values[id] += xdistanceSqr * sts;
-        y_values[id] += xdistanceSqr * sts;
-        z_values[id] += xdistanceSqr * sts;
+        const float sts = mass[j] * invDistCube * TIMESTEP;
+        x_values[other] += xdistanceSqr * sts;
+        y_values[other] += xdistanceSqr * sts;
+        z_values[other] += xdistanceSqr * sts;
     }
     // reduce to one
     SYNC_THREADS;
     if (id == 0) {
-      printf("sum");
         for (int j = 1; j < 1024; j++) {
 
             x_values[0] += x_values[j];
@@ -47,15 +46,15 @@ __global__ void soa_update(float* posx, float* posy, float* posz, float* velx, f
     }
     SYNC_THREADS;
 }
-/*
-__global__ void move() {
+
+__global__ void soa_move(float* posx, float* posy, float* posz, float* velx, float* vely, float* velz) {
   int id = LINEAR_ID;
   for (std::size_t i = id; i < kProblemSize; i += 1024) {
-    posx[i] += velx[i] * kTimestep;
-    posy[i] += vely[i] * kTimestep;
-    posz[i] += velz[i] * kTimestep;
+    posx[i] += velx[i] * TIMESTEP;
+    posy[i] += vely[i] * TIMESTEP;
+    posz[i] += velz[i] * TIMESTEP;
   }
-}*/
+}
 
 void soa_run() {
 
@@ -85,39 +84,48 @@ void soa_run() {
     float* velz_d;
     float* mass_d;
 
-    cudaMalloc(&posx_d, kProblemSize * sizeof(float));
-    cudaMalloc(&posy_d, kProblemSize * sizeof(float));
-    cudaMalloc(&posz_d, kProblemSize * sizeof(float));
-    cudaMalloc(&velx_d, kProblemSize * sizeof(float));
-    cudaMalloc(&vely_d, kProblemSize * sizeof(float));
-    cudaMalloc(&velz_d, kProblemSize * sizeof(float));
-    cudaMalloc(&mass_d, kProblemSize * sizeof(float));
+    HANDLE_ERROR(cudaMalloc(&posx_d, kProblemSize * sizeof(float)));
+    HANDLE_ERROR(cudaMalloc(&posy_d, kProblemSize * sizeof(float)));
+    HANDLE_ERROR(cudaMalloc(&posz_d, kProblemSize * sizeof(float)));
+    HANDLE_ERROR(cudaMalloc(&velx_d, kProblemSize * sizeof(float)));
+    HANDLE_ERROR(cudaMalloc(&vely_d, kProblemSize * sizeof(float)));
+    HANDLE_ERROR(cudaMalloc(&velz_d, kProblemSize * sizeof(float)));
+    HANDLE_ERROR(cudaMalloc(&mass_d, kProblemSize * sizeof(float)));
     // copy points to Device
-    cudaMemcpy(posx_d, posx_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(posy_d, posy_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(posz_d, posz_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(velx_d, velx_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(vely_d, vely_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(velz_d, velz_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(mass_d, mass_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice);
+    HANDLE_ERROR(cudaMemcpy(posx_d, posx_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice));
+    HANDLE_ERROR(cudaMemcpy(posy_d, posy_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice));
+    HANDLE_ERROR(cudaMemcpy(posz_d, posz_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice));
+    HANDLE_ERROR(cudaMemcpy(velx_d, velx_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice));
+    HANDLE_ERROR(cudaMemcpy(vely_d, vely_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice));
+    HANDLE_ERROR(cudaMemcpy(velz_d, velz_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice));
+    HANDLE_ERROR(cudaMemcpy(mass_d, mass_h, kProblemSize * sizeof(float), cudaMemcpyHostToDevice));
 
     //
     cudaEvent_t start, end;
+    cudaEvent_t start2, end2;
 
     HANDLE_ERROR(cudaEventCreate(&start));
     HANDLE_ERROR(cudaEventCreate(&end));
+    HANDLE_ERROR(cudaEventCreate(&start2));
+    HANDLE_ERROR(cudaEventCreate(&end2));
 
-    // for (std::size_t s = 0; s <  kSteps; ++s) {
-    cudaEventRecord(start, 0);
-    std::cout << "Kernel\n";
-    soa_update << <kProblemSize, 1024 , sizeof (float)*3*kProblemSize>> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
+    for (std::size_t s = 0; s <  STEPS; ++s) {
+    HANDLE_ERROR(cudaEventRecord(start, 0));
+    
+    soa_update << <kProblemSize, 1024 >> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
     cudaEventRecord(end, 0);
 
-    cudaEventSynchronize(end);
-    HANDLE_LAST_ERROR;
+    cudaEventRecord(start2, 0);
+    soa_move << <kProblemSize / 1024, 1024 >> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
+    cudaEventRecord(end2, 0);
+    HANDLE_ERROR(cudaEventSynchronize(end2));
+    // HANDLE_LAST_ERROR;
     float time;
     cudaEventElapsedTime(&time, start, end);
-
+    float time2;
+    cudaEventElapsedTime(&time2, start2, end2);
+    std::cout << "SoA\t" << time / 1 << "ms" << '\t' << time2 / 1 << "ms" << '\n';
+}
   cudaMemcpy(posx_h, posx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(posy_h, posy_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(posz_h, posz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
@@ -126,9 +134,6 @@ void soa_run() {
   cudaMemcpy(velz_h, velz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(mass_h, mass_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
 
-    // move<<<kProblemSize / 1024, 1024>>>(posx.data(), posy.data(), posz.data(),
-    //                                    velx.data(), vely.data(), velz.data());
-    // sumMove += watch.elapsedAndReset();
-    // }
-    std::cout << "SoA\t" << time / kSteps << "ms" << '\t' << '\n';
+   
+    
 }

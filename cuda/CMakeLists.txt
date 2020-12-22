@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(nbody CUDA)
 
-set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD 14)
 
 add_executable(nbody main.cu)
 target_compile_options(${PROJECT_NAME} PRIVATE
@@ -23,6 +23,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         # -extra-device-vectorization
 
         )
+
 set_target_properties(
         nbody
         PROPERTIES

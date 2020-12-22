@@ -6,7 +6,7 @@
 int main(void) {
 	printf("%d k particles (%f kiB)\n", kProblemSize, (float)(kProblemSize * sizeof(float) * 7 / 1024) );
 
-   // aos_run();
+  // aos_run();
     soa_run();
    // asosa_run();
 
