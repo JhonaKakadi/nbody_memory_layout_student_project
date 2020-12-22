@@ -19,7 +19,7 @@ const float kEPS2 = 0.01f;
 #define EPS2 0.01f 
 // contains definition of error handler
 
-#define HANDLE_LAST_ERROR handleCudaError(cudaGetLastError(),__FILE__, __LINE__);
+#define HANDLE_LAST_ERROR handleCudaError(cudaGetLastError(),__FILE__, __LINE__)
 #define NUM_OF_THREADS_PER_BLOCK blockDim.x * blockDim.y * blockDim.z
 #define TOTAL_NUM_OF_THREADS NUM_OF_THREADS_PER_BLOCK * gridDim.x * gridDim.y * gridDim.z
 
