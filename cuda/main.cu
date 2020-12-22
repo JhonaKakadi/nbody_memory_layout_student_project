@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 #include "array_of_structs.cu"
 #include "struct_of_arrays.cu"
 
