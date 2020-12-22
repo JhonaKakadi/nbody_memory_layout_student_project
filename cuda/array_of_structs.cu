@@ -9,7 +9,7 @@ struct particle {
 
 
 
-inline void aos_pp_interaction(struct particle* p_i, struct particle* p_j) {
+__device__ inline void aos_pp_interaction(struct particle* p_i, struct particle* p_j) {
 	// still not sure if i want to stick with the data structure
 	// so i didn't implement it yet
 }
@@ -38,14 +38,14 @@ __global__ void aos_update(particle* particles) {
 __global__ void aos_move(particle* particles) {
 	for (int i = 0; i < ( sizeof(particles) / sizeof(struct particle) ); ++i) {
 		for (int j = 0; j < 3; ++j) {
-			particles[i].pos[j] += particles[i].vel[j] * kTimestep;
+			particles[i].pos[j] += particles[i].vel[j] * TIMESTEP;
 		}
 	}
 }
 	
 
 
-int aos_run(void) {
+void aos_run(void) {
 
 	// init event management
 	cudaEvent_t start_update, stop_update;
@@ -60,7 +60,7 @@ int aos_run(void) {
 
 	// init array
 	struct particle particles_host[kProblemSize];
-	struct particle particles_device[kProblemSize];
+	struct particle* particles_device[kProblemSize];
 	
 	// fill array with structs of random values
 	for (int i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {
