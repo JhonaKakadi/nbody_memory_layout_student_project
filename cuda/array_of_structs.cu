@@ -63,7 +63,7 @@ int aos_run(void) {
 	struct particle particles_device[kProblemSize];
 	
 	// fill array with structs of random values
-	//for (int i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {
+	for (int i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {
 		for (int j = 0; j < 3; ++j) {
 			particles_host[i].pos[j] = 0;
 		}
@@ -96,12 +96,12 @@ int aos_run(void) {
 	for (int s = 0; s < kSteps; ++s) {
 		
 		cudaEventRecord(start_update);
-		aos_update<<< numSMs, 256 >>>(particles);
+		aos_update<<< numSMs, 256 >>>(particles_device);
 		HANDLE_ERROR(cudaGetLastError());
 		cudaEventRecord(stop_update);
 		
 		cudaEventRecord(start_move);
-		aos_move<<< numSMs, 256 >>>(particles);
+		aos_move<<< numSMs, 256 >>>(particles_device);
 		HANDLE_ERROR(cudaGetLastError());
 		cudaEventRecord(stop_move);
 	}
