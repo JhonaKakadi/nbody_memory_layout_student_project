@@ -1,7 +1,6 @@
 #include "shared_header.h"
 
-
-__global__ void soa_update(float* posx, float* posy, float* posz, float* velx, float* vely, float* velz, float* mass) {
+__global__ void soa_update(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass) {
     // one kernel per particle
     // 1024 threads per particle
     // Todo use constant mem for save original points
@@ -14,7 +13,6 @@ __global__ void soa_update(float* posx, float* posy, float* posz, float* velx, f
     x_values[other] = 0;
     y_values[other] = 0;
     z_values[other] = 0;
-
 
     for (std::size_t j = other; j < PROBLEMSIZE; j += 1024) {
         const float xdistance = posx[id] - posx[j];
@@ -47,42 +45,43 @@ __global__ void soa_update(float* posx, float* posy, float* posz, float* velx, f
     SYNC_THREADS;
 }
 
-__global__ void soa_move(float* posx, float* posy, float* posz, float* velx, float* vely, float* velz) {
-  int id = LINEAR_ID;
-  for (std::size_t i = id; i < kProblemSize; i += 1024) {
-    posx[i] += velx[i] * TIMESTEP;
-    posy[i] += vely[i] * TIMESTEP;
-    posz[i] += velz[i] * TIMESTEP;
-  }
+__global__ void soa_move(float *posx, float *posy, float *posz, float *velx,
+                         float *vely, float *velz) {
+    int id = LINEAR_ID;
+    for (std::size_t i = id; i < kProblemSize; i += 1024) {
+        posx[i] += velx[i] * TIMESTEP;
+        posy[i] += vely[i] * TIMESTEP;
+        posz[i] += velz[i] * TIMESTEP;
+    }
 }
 
 void soa_run() {
 
-    float* posx_h = (float*)malloc(sizeof(float) * kProblemSize);
-    float* posy_h = (float*)malloc(sizeof(float) * kProblemSize);
-    float* posz_h = (float*)malloc(sizeof(float) * kProblemSize);
-    float* velx_h = (float*)malloc(sizeof(float) * kProblemSize);
-    float* vely_h = (float*)malloc(sizeof(float) * kProblemSize);
-    float* velz_h = (float*)malloc(sizeof(float) * kProblemSize);
-    float* mass_h = (float*)malloc(sizeof(float) * kProblemSize);
+    float *posx_h = (float *) malloc(sizeof(float) * kProblemSize);
+    float *posy_h = (float *) malloc(sizeof(float) * kProblemSize);
+    float *posz_h = (float *) malloc(sizeof(float) * kProblemSize);
+    float *velx_h = (float *) malloc(sizeof(float) * kProblemSize);
+    float *vely_h = (float *) malloc(sizeof(float) * kProblemSize);
+    float *velz_h = (float *) malloc(sizeof(float) * kProblemSize);
+    float *mass_h = (float *) malloc(sizeof(float) * kProblemSize);
     srand(NULL);
     for (std::size_t i = 0; i < kProblemSize; ++i) {
-        posx_h[i] = (float)rand();
-        posy_h[i] = (float)rand();
-        posz_h[i] = (float)rand();
-        velx_h[i] = (float)rand() / 10.0f;
-        vely_h[i] = (float)rand() / 10.0f;
-        velz_h[i] = (float)rand() / 10.0f;
-        mass_h[i] = (float)rand() / 100.0f;
+        posx_h[i] = (float) rand();
+        posy_h[i] = (float) rand();
+        posz_h[i] = (float) rand();
+        velx_h[i] = (float) rand() / 10.0f;
+        vely_h[i] = (float) rand() / 10.0f;
+        velz_h[i] = (float) rand() / 10.0f;
+        mass_h[i] = (float) rand() / 100.0f;
     }
 
-    float* posx_d;
-    float* posy_d;
-    float* posz_d;
-    float* velx_d;
-    float* vely_d;
-    float* velz_d;
-    float* mass_d;
+    float *posx_d;
+    float *posy_d;
+    float *posz_d;
+    float *velx_d;
+    float *vely_d;
+    float *velz_d;
+    float *mass_d;
 
     HANDLE_ERROR(cudaMalloc(&posx_d, kProblemSize * sizeof(float)));
     HANDLE_ERROR(cudaMalloc(&posy_d, kProblemSize * sizeof(float)));
@@ -109,31 +108,29 @@ void soa_run() {
     HANDLE_ERROR(cudaEventCreate(&start2));
     HANDLE_ERROR(cudaEventCreate(&end2));
 
-    for (std::size_t s = 0; s <  STEPS; ++s) {
-    HANDLE_ERROR(cudaEventRecord(start, 0));
-    
-    soa_update << <kProblemSize, 1024 >> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
-    cudaEventRecord(end, 0);
+    for (std::size_t s = 0; s < STEPS; ++s) {
+        HANDLE_ERROR(cudaEventRecord(start, 0));
 
-    cudaEventRecord(start2, 0);
-    soa_move << <kProblemSize / 1024, 1024 >> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
-    cudaEventRecord(end2, 0);
-    HANDLE_ERROR(cudaEventSynchronize(end2));
-    // HANDLE_LAST_ERROR;
-    float time;
-    cudaEventElapsedTime(&time, start, end);
-    float time2;
-    cudaEventElapsedTime(&time2, start2, end2);
-    std::cout << "SoA\t" << time / 1 << "ms" << '\t' << time2 / 1 << "ms" << '\n';
-}
-  cudaMemcpy(posx_h, posx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(posy_h, posy_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(posz_h, posz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(velx_h, velx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(vely_h, vely_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(velz_h, velz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(mass_h, mass_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
+        soa_update<<<kProblemSize, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
+        cudaEventRecord(end, 0);
 
-   
-    
+        cudaEventRecord(start2, 0);
+        soa_move<<<kProblemSize / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
+        cudaEventRecord(end2, 0);
+        HANDLE_ERROR(cudaEventSynchronize(end2));
+        // HANDLE_LAST_ERROR;
+        float time;
+        cudaEventElapsedTime(&time, start, end);
+        float time2;
+        cudaEventElapsedTime(&time2, start2, end2);
+        std::cout << "SoA\t" << time / 1 << "ms" << '\t' << time2 / 1 << "ms"
+                  << '\n';
+    }
+    cudaMemcpy(posx_h, posx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(posy_h, posy_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(posz_h, posz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(velx_h, velx_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(vely_h, vely_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(velz_h, velz_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(mass_h, mass_d, kProblemSize * sizeof(float), cudaMemcpyDeviceToHost);
 }
