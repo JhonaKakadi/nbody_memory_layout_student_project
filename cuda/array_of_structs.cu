@@ -17,7 +17,7 @@ __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle*
 	
 	const float dist_sqr = EPS2 + distance_sqr_x + distance_sqr_y + distance_sqr_z;
 	const float dist_sixth = dist_sqr * dist_sqr * dist_sqr;
-	const float inv_dist_cube = 1.0f / sqrt(double(dist_sixth));		// will there be performance issues with double?
+	const float inv_dist_cube = 1.0f / sqrt(double(dist_sixth));		// use cudaSqrt for performance, double is problematic
 	const float sts = p_j->mass * inv_dist_cube * TIMESTEP;
 	
 	p_i->vel[0] += distance_sqr_x * sts;
@@ -33,7 +33,7 @@ __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle*
 // both particles will be updated.
 //
 __global__ void aos_update(particle* particles) {
-	id = LINEAR_ID;
+	int id = LINEAR_ID;
 	if (id < PROBLEMSIZE) {
 		for (int j = id+1; j < PROBLEMSIZE; ++j) {
 			aos_pp_interaction(&particles[id], &particles[j]);
@@ -48,7 +48,7 @@ __global__ void aos_update(particle* particles) {
 // and for each (of three) particle calculates the new position.
 //
 __global__ void aos_move(particle* particles) {
-	id = LINEAR_ID;
+	int id = LINEAR_ID;
 	if (id < PROBLEMSIZE) {
 		for (int j = 0; j < 3; ++j) {
 			particles[id].pos[j] += particles[id].vel[j] * TIMESTEP;
@@ -104,7 +104,7 @@ void aos_run(void) {
 	// with time measurement (events)
 	
 	const int num_threads = 1024;
-	int num_SMs = PROBLEMSIZE/num_threads
+	const int num_SMs = PROBLEMSIZE/num_threads;
 	
 	float time_update, time_move;
 	for (int s = 0; s < STEPS; ++s) {
