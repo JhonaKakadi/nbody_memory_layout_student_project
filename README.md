@@ -11,8 +11,11 @@ mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
-./nbody```
+./nbody
+```
 
 It is also possible to compile without a makefile using
-```nvcc main.cu array_of_structs.cu struct_of_arrays.cu array_of_struct_of_arrays.cu
-./nbody```
+```bash
+nvcc main.cu array_of_structs.cu struct_of_arrays.cu array_of_struct_of_arrays.cu
+./nbody
+```
