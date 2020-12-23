@@ -4,7 +4,7 @@
 #
 # Tasks are added as separate sub-projects so as compilation errors in
 # one task don't affect another task.
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.10)
 project(nbody CUDA)
 
 set(CMAKE_CUDA_STANDARD 14)
