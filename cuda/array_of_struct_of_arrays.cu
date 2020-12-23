@@ -129,8 +129,8 @@ void aosoa_run(){
 
         cudaEventSynchronize(stop_move);
         cudaEventElapsedTime(&time_update, start_update, stop_update);
-        printf("AoSoA\t%fms\t%fms\n", time_update, time_move);
         cudaEventElapsedTime(&time_move, start_move, stop_move);
+		printf("AoSoA\t%fms\t%fms\n", time_update, time_move);
     }
 
     // maybe write back
