@@ -1,4 +1,6 @@
-// contains global constants
+#ifndef SHARED_HEADER_H
+#define SHARED_HEADER_H
+
 #include "cuda_runtime.h"
 #include "cuda_runtime_api.h"
 #include "device_launch_parameters.h"
@@ -8,15 +10,16 @@
 #include <iostream>
 
 
-const int kProblemSize = 16 * 1024;
-const int kSteps = 5;
-const float kTimestep = 0.0001f;
-const float kEPS2 = 0.01f;
+// contains global constants
 
 #define PROBLEMSIZE 16 * 1024
 #define STEPS  5
 #define TIMESTEP 0.0001f
 #define EPS2 0.01f
+#define LANES 32
+#define BLOCKS PROBLEMSIZE/LANES
+
+
 // contains definition of error handler
 
 #define HANDLE_LAST_ERROR handleCudaError(cudaGetLastError(),__FILE__, __LINE__)
@@ -87,3 +90,4 @@ void print_cuda_infos_at_start() {
     cudaSetDevice(0);
 }
 
+#endif
