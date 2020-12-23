@@ -20,6 +20,6 @@ make
 It is also possible to compile without a makefile using
 ```bash
 cd cuda
-nvcc main.cu array_of_structs.cu struct_of_arrays.cu array_of_struct_of_arrays.cu
+nvcc main.cu
 ./nbody
 ```
