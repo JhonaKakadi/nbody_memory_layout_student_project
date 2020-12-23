@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 int main(void) {
+
     print_cuda_infos_at_start();
 	printf("%d k particles (%f kiB)\n", kProblemSize, (float)(kProblemSize * sizeof(float) * 7 / 1024) );
    
