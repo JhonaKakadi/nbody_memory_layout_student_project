@@ -35,9 +35,9 @@ __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle*
 __global__ void aos_update(particle* particles) {
 	int id = LINEAR_ID;
 	if (id < PROBLEMSIZE) {
-		for (int j = id+1; j < PROBLEMSIZE; ++j) {
+		for (int j = 0; j < PROBLEMSIZE; ++j) {
 			aos_pp_interaction(&particles[id], &particles[j]);
-			aos_pp_interaction(&particles[j], &particles[id]);
+			//aos_pp_interaction(&particles[j], &particles[id]);
 		}
 	}
 }
