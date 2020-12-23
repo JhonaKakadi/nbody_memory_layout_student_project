@@ -33,10 +33,11 @@ __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle*
 // both particles will be updated.
 //
 __global__ void aos_update(particle* particles) {
-	for (int i = 0; i < ( sizeof(particles) / sizeof(struct particle) ); ++i) {
-		for (int j = i+1; j < ( sizeof(particles) / sizeof(struct particle) ); ++j) {
-			aos_pp_interaction(&particles[i], &particles[j]);
-			aos_pp_interaction(&particles[j], &particles[i]);
+	id = LINEAR_ID;
+	if (id < PROBLEMSIZE) {
+		for (int j = id+1; j < PROBLEMSIZE; ++j) {
+			aos_pp_interaction(&particles[id], &particles[j]);
+			aos_pp_interaction(&particles[j], &particles[id]);
 		}
 	}
 }
@@ -47,9 +48,10 @@ __global__ void aos_update(particle* particles) {
 // and for each (of three) particle calculates the new position.
 //
 __global__ void aos_move(particle* particles) {
-	for (int i = 0; i < ( sizeof(particles) / sizeof(struct particle) ); ++i) {
+	id = LINEAR_ID;
+	if (id < PROBLEMSIZE) {
 		for (int j = 0; j < 3; ++j) {
-			particles[i].pos[j] += particles[i].vel[j] * TIMESTEP;
+			particles[id].pos[j] += particles[id].vel[j] * TIMESTEP;
 		}
 	}
 }
@@ -101,19 +103,19 @@ void aos_run(void) {
 	//		-> run
 	// with time measurement (events)
 	
-	int numSMs;
-	HANDLE_ERROR( cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0) );
+	const int num_threads = 1024;
+	int num_SMs = PROBLEMSIZE/num_threads
 	
 	float time_update, time_move;
 	for (int s = 0; s < STEPS; ++s) {
 		
 		cudaEventRecord(start_update, 0);
-		aos_update<<< numSMs, 256 >>>(particles_device);
+		aos_update<<< num_SMs, num_threads >>>(particles_device);
 		HANDLE_LAST_ERROR;
 		cudaEventRecord(stop_update, 0);
 		
 		cudaEventRecord(start_move, 0);
-		aos_move<<< numSMs, 256 >>>(particles_device);
+		aos_move<<< num_SMs, num_threads >>>(particles_device);
 		HANDLE_LAST_ERROR;
 		cudaEventRecord(stop_move, 0);
 		
