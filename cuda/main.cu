@@ -1,5 +1,6 @@
 #include "array_of_structs.cu"
 #include "struct_of_arrays.cu"
+#include "array_of_struct_of_arrays.cu"
 #include <stdio.h>
 
 int main(void) {
@@ -8,7 +9,7 @@ int main(void) {
    
     aos_run();
     soa_run();
-    // asosa_run();
+    aosoa_run();
 
     return 0;
 }

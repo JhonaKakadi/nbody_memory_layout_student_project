@@ -70,7 +70,7 @@ void aos_run(void) {
 
 
 	// init array
-	struct particle particles_host[kProblemSize];
+	struct particle particles_host[PROBLEMSIZE];
 	struct particle* particles_device;
 	
 	// fill array with structs of random values
@@ -88,7 +88,7 @@ void aos_run(void) {
 	
 	
 	// copy data to device
-	int datasize = kProblemSize * sizeof(struct particle);
+	int datasize = sizeof(particles_host);
 	
 	HANDLE_ERROR( cudaMalloc(&particles_device, datasize) );
 
@@ -96,7 +96,7 @@ void aos_run(void) {
 	
 	
 	
-	// loop with kSteps to GPU-compute
+	// loop with STEPS to GPU-compute
 	//		-> update
 	//		-> run
 	// with time measurement (events)
@@ -104,20 +104,24 @@ void aos_run(void) {
 	int numSMs;
 	HANDLE_ERROR( cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, 0) );
 	
-	for (int s = 0; s < kSteps; ++s) {
+	float time_update, time_move;
+	for (int s = 0; s < STEPS; ++s) {
 		
-		cudaEventRecord(start_update);
+		cudaEventRecord(start_update, 0);
 		aos_update<<< numSMs, 256 >>>(particles_device);
-		HANDLE_ERROR(cudaGetLastError());
-		cudaEventRecord(stop_update);
+		HANDLE_LAST_ERROR;
+		cudaEventRecord(stop_update, 0);
 		
-		cudaEventRecord(start_move);
+		cudaEventRecord(start_move, 0);
 		aos_move<<< numSMs, 256 >>>(particles_device);
-		HANDLE_ERROR(cudaGetLastError());
-		cudaEventRecord(stop_move);
+		HANDLE_LAST_ERROR;
+		cudaEventRecord(stop_move, 0);
+		
+		cudaEventSynchronize(stop_move);
+		cudaEventElapsedTime(&time_update, start_update, stop_update);
+		cudaEventElapsedTime(&time_move, start_move, stop_move);
+		printf("AoS\t%fms\t%fms\n", time_update, time_move);
 	}
-	cudaEventSynchronize(stop_update);
-	cudaEventSynchronize(start_move);
 	
 	
 	
@@ -126,12 +130,12 @@ void aos_run(void) {
 	//HANDLE_ERROR( cudaMemcpy(praticles_host, particles_device, datasize, cudaMemcpyDeviceToHost) );
 	
 	// compute time for the benchmark
-	float time_update, time_move;
-	cudaEventElapsedTime(&time_update, start_update, stop_update);
-	cudaEventElapsedTime(&time_move, start_move, stop_move);
+	//float time_update, time_move;
+	//cudaEventElapsedTime(&time_update, start_update, stop_update);
+	//cudaEventElapsedTime(&time_move, start_move, stop_move);
 	
 	// print time
-	printf("AoS\t%fms\t%fms\n", time_update, time_move);
+	//printf("AoS\t%fms\t%fms\n", time_update, time_move);
 	
 	
 	

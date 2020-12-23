@@ -12,15 +12,13 @@
 
 // contains global constants
 
-const int kProblemSize = 16 * 1024;
-const int kSteps = 5;
-const float kTimestep = 0.0001f;
-const float kEPS2 = 0.01f;
-
 #define PROBLEMSIZE 16 * 1024
 #define STEPS  5
 #define TIMESTEP 0.0001f 
 #define EPS2 0.01f
+
+#define LANES 32
+#define BLOCKS PROBLEMSIZE/LANES
 
 
 // contains definition of error handler

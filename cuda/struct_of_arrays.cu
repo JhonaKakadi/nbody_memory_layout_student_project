@@ -149,6 +149,6 @@ void soa_run() {
     HANDLE_ERROR(cudaFree(vely_d));
     HANDLE_ERROR(cudaFree(velz_d));
     HANDLE_ERROR(cudaFree(mass_d));
-    // maybe reset
-    // cudaDeviceReset();
+
+    HANDLE_ERROR(cudaDeviceReset());
 }
