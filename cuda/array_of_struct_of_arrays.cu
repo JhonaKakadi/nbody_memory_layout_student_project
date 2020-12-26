@@ -82,12 +82,12 @@ void aosoa_run() {
 
     // init event management
     cudaEvent_t start_update, stop_update;
-    cudaEventCreate(&start_update);
-    cudaEventCreate(&stop_update);
+    HANDLE_ERROR(cudaEventCreate(&start_update));
+    HANDLE_ERROR(cudaEventCreate(&stop_update));
 
     cudaEvent_t start_move, stop_move;
-    cudaEventCreate(&start_move);
-    cudaEventCreate(&stop_move);
+    HANDLE_ERROR(cudaEventCreate(&start_move));
+    HANDLE_ERROR(cudaEventCreate(&stop_move));
 
     // "allocate" mem
     struct particle_block* particle_block_host = (particle_block*) malloc(BLOCKS* sizeof(particle_block));
@@ -119,19 +119,19 @@ void aosoa_run() {
     float time_update, time_move;
     for (int i = 0; i < STEPS; ++i) {
         // call update
-        cudaEventRecord(start_update, 0);
+        HANDLE_ERROR(cudaEventRecord(start_update, 0));
         aosoa_update<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
         HANDLE_LAST_ERROR;
-        cudaEventRecord(stop_update, 0);
+        HANDLE_ERROR(cudaEventRecord(stop_update, 0));
         // call move
-        cudaEventRecord(start_move, 0);
+        HANDLE_ERROR(cudaEventRecord(start_move, 0));
         aosoa_move<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
-        HANDLE_LAST_ERROR;
+        
         cudaEventRecord(stop_move, 0);
 
-        cudaEventSynchronize(stop_move);
-        cudaEventElapsedTime(&time_update, start_update, stop_update);
-        cudaEventElapsedTime(&time_move, start_move, stop_move);
+        HANDLE_ERROR(cudaEventSynchronize(stop_move));
+        HANDLE_ERROR(cudaEventElapsedTime(&time_update, start_update, stop_update));
+        HANDLE_ERROR(cudaEventElapsedTime(&time_move, start_move, stop_move));
         printf("AoSoA\t%fms\t%fms\n", time_update, time_move);
         sum_move += time_move;
         sum_update += time_update;

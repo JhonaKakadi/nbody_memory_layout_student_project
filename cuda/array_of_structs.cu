@@ -62,11 +62,9 @@ void aos_run(void) {
 
 	
 
-	printf("Hallo");
 	// init array
 	struct particle* particles_host = (particle*) malloc(PROBLEMSIZE * sizeof(particle));
 	struct particle* particles_device;
-	printf("Hallo");
 
 	// fill array with structs of random values
 	for (long i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {

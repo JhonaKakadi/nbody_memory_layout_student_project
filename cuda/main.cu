@@ -6,7 +6,7 @@
 int main(void) {
 
     print_cuda_infos_at_start();
-	printf("%d k particles (%f kiB)\n", PROBLEMSIZE, 
+	printf("%d k particles (%.3f kiB)\n", PROBLEMSIZE,
 		(float)(PROBLEMSIZE * sizeof(float) * 7 / 1024) );
    
     aos_run();

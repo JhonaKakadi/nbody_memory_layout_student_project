@@ -3,7 +3,6 @@
 __global__ void soa_update(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass) {
     // one kernel per particle
     // 1024 threads per particle
-    // Todo use constant mem for save original points
     // Todo choose good names for vars
     // Note 32 is size of warp
     int id = blockIdx.x;
@@ -144,9 +143,10 @@ void soa_run() {
 
         HANDLE_ERROR(cudaEventRecord(start, 0));
         soa_update<<<PROBLEMSIZE, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
-        cudaEventRecord(end, 0);
+        HANDLE_LAST_ERROR;
+        HANDLE_ERROR(cudaEventRecord(end, 0));
 
-        cudaEventRecord(start2, 0);
+        HANDLE_ERROR(cudaEventRecord(start2, 0));
         soa_move<<<(PROBLEMSIZE + 1023) / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
         HANDLE_ERROR(cudaEventRecord(end2, 0));
         HANDLE_ERROR(cudaEventSynchronize(end2));
@@ -155,7 +155,7 @@ void soa_run() {
         HANDLE_ERROR(cudaEventElapsedTime(&time_update, start, end));
         float time_move;
         HANDLE_ERROR(cudaEventElapsedTime(&time_move, start2, end2));
-        std::cout << "SoA\t" << time_update << "ms" << '\t' << time_move << "ms" << '\n';
+        printf("SoA\t%3.4fms\t%3.4fms\n",time_update, time_move);
         sum_move += time_move;
         sum_update += time_update;
     }
