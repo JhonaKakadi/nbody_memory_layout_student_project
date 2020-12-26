@@ -21,7 +21,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
         # arch sholud be low  code should be high
         # --use_fast_math # implies --ftz=true --prec-div=false --prec-sqrt=false --fmad=true
         # -extra-device-vectorization
-
+        # -maxrregcount 32 # set num of registers per thread (0-255)
         )
 
 set_target_properties(

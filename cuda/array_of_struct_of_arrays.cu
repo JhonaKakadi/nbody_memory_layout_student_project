@@ -2,14 +2,12 @@
 
 struct particle_block        // deleted alignas(64)
 {
-    struct
-    {
+    struct {
         float x[LANES];
         float y[LANES];
         float z[LANES];
     } pos;
-    struct
-    {
+    struct {
         float x[LANES];
         float y[LANES];
         float z[LANES];
@@ -21,14 +19,13 @@ __device__ inline void pPInteraction(
         float piposx,
         float piposy,
         float piposz,
-        float* pivelx,
-        float* pively,
-        float* pivelz,
+        float *pivelx,
+        float *pively,
+        float *pivelz,
         float pjposx,
         float pjposy,
         float pjposz,
-        float pjmass)
-        {
+        float pjmass) {
     float xdistance = piposx - pjposx;
     float ydistance = piposy - pjposy;
     float zdistance = piposz - pjposz;
@@ -44,33 +41,33 @@ __device__ inline void pPInteraction(
     *pivelz += zdistance * sts;
 }
 
-__global__ void aosoa_update(particle_block* particles){
+__global__ void aosoa_update(particle_block *particles) {
     __shared__ particle_block mainBlock;
     __shared__ particle_block otherBlock;
     const int mainLane = threadIdx.x;
     if (threadIdx.x == 0) {
         mainBlock = particles[blockIdx.x];
-    }    
-    for (int otherBlockIndex = 0; otherBlockIndex < BLOCKS; ++otherBlockIndex){
+    }
+    for (int otherBlockIndex = 0; otherBlockIndex < BLOCKS; ++otherBlockIndex) {
         SYNC_THREADS;
         otherBlock = particles[otherBlockIndex];
-        for (int otherLane = 0; otherLane < LANES; ++otherLane){
-        pPInteraction( mainBlock.pos.x[mainLane],
-            mainBlock.pos.y[mainLane],
-            mainBlock.pos.z[mainLane],
-            &mainBlock.vel.x[mainLane],
-            &mainBlock.vel.y[mainLane],
-            &mainBlock.vel.z[mainLane],
-            otherBlock.pos.x[otherLane],
-            otherBlock.pos.y[otherLane],
-            otherBlock.pos.z[otherLane],
-            otherBlock.mass[otherLane]);
+        for (int otherLane = 0; otherLane < LANES; ++otherLane) {
+            pPInteraction(mainBlock.pos.x[mainLane],
+                          mainBlock.pos.y[mainLane],
+                          mainBlock.pos.z[mainLane],
+                          &mainBlock.vel.x[mainLane],
+                          &mainBlock.vel.y[mainLane],
+                          &mainBlock.vel.z[mainLane],
+                          otherBlock.pos.x[otherLane],
+                          otherBlock.pos.y[otherLane],
+                          otherBlock.pos.z[otherLane],
+                          otherBlock.mass[otherLane]);
         }
     }
 }
 
-
-__global__ void aosoa_move(struct particle_block* particle_block){
+// Todo find a way to use more threads per block and less blocks
+__global__ void aosoa_move(struct particle_block *particle_block) {
     int bi = blockIdx.x;
     int i = threadIdx.x;
 
@@ -81,8 +78,7 @@ __global__ void aosoa_move(struct particle_block* particle_block){
 }
 
 
-
-void aosoa_run(){
+void aosoa_run() {
 
     // init event management
     cudaEvent_t start_update, stop_update;
@@ -95,48 +91,48 @@ void aosoa_run(){
 
     // "allocate" mem
     struct particle_block particle_block_host[BLOCKS];
-    struct particle_block* particle_block_device;
+    struct particle_block *particle_block_device;
 
     // fill with random values
     // iterate over the structs 'stru' in the array
-    for (int stru = 0; stru < ( sizeof(particle_block_host) / sizeof(struct particle_block) ); ++stru) {
+    for (int stru = 0; stru < (sizeof(particle_block_host) / sizeof(struct particle_block)); ++stru) {
         // iterate over pos-array inside the struct, then over the vel-arrays, then mass-array
         for (int l = 0; l < LANES; ++l) {
-            particle_block_host[stru].pos.x[l] = (float)rand();
-            particle_block_host[stru].pos.y[l] = (float)rand();
-            particle_block_host[stru].pos.z[l] = (float)rand();
+            particle_block_host[stru].pos.x[l] = (float) rand();
+            particle_block_host[stru].pos.y[l] = (float) rand();
+            particle_block_host[stru].pos.z[l] = (float) rand();
 
-            particle_block_host[stru].vel.x[l] = (float)rand() / 10.0f;
-            particle_block_host[stru].vel.y[l] = (float)rand() / 10.0f;
-            particle_block_host[stru].vel.z[l] = (float)rand() / 10.0f;
+            particle_block_host[stru].vel.x[l] = (float) rand() / 10.0f;
+            particle_block_host[stru].vel.y[l] = (float) rand() / 10.0f;
+            particle_block_host[stru].vel.z[l] = (float) rand() / 10.0f;
 
-            particle_block_host[stru].mass[l] = (float)rand() / 100.0f;
+            particle_block_host[stru].mass[l] = (float) rand() / 100.0f;
         }
     }
 
     int datasize = sizeof(particle_block_host);
-    HANDLE_ERROR( cudaMalloc(&particle_block_device, datasize) );
-    HANDLE_ERROR( cudaMemcpy(particle_block_device, particle_block_host, datasize, cudaMemcpyHostToDevice) );
+    HANDLE_ERROR(cudaMalloc(&particle_block_device, datasize));
+    HANDLE_ERROR(cudaMemcpy(particle_block_device, particle_block_host, datasize, cudaMemcpyHostToDevice));
 
 
-    float sum_move = 0, sum_update =0;
+    float sum_move = 0, sum_update = 0;
     float time_update, time_move;
     for (int i = 0; i < STEPS; ++i) {
         // call update
         cudaEventRecord(start_update, 0);
-        aosoa_update<<<(PROBLEMSIZE + LANES - 1)/LANES, LANES>>>(particle_block_device);
+        aosoa_update<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
         HANDLE_LAST_ERROR;
         cudaEventRecord(stop_update, 0);
         // call move
         cudaEventRecord(start_move, 0);
-        aosoa_move<<<(PROBLEMSIZE + LANES - 1)/LANES, LANES>>>(particle_block_device);
+        aosoa_move<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
         HANDLE_LAST_ERROR;
         cudaEventRecord(stop_move, 0);
 
         cudaEventSynchronize(stop_move);
         cudaEventElapsedTime(&time_update, start_update, stop_update);
         cudaEventElapsedTime(&time_move, start_move, stop_move);
-		printf("AoSoA\t%fms\t%fms\n", time_update, time_move);
+        printf("AoSoA\t%fms\t%fms\n", time_update, time_move);
         sum_move += time_move;
         sum_update += time_update;
     }
@@ -145,6 +141,6 @@ void aosoa_run(){
     // maybe write back
 
     // free mem
-    HANDLE_ERROR( cudaFree(particle_block_device) );
-    HANDLE_ERROR( cudaDeviceReset() );
+    HANDLE_ERROR(cudaFree(particle_block_device));
+    HANDLE_ERROR(cudaDeviceReset());
 }

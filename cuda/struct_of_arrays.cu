@@ -14,11 +14,11 @@ __global__ void soa_update(float *posx, float *posy, float *posz, float *velx, f
 
     float x_run = 0;
     float y_run = 0;
-    float z_run = 0; 
+    float z_run = 0;
     const float posix = posx[id];
     const float posiy = posy[id];
     const float posiz = posz[id];
-    
+
 
     for (std::size_t j = other; j < PROBLEMSIZE; j += 1024) {
         const float xdistance = posix - posx[j];
@@ -57,14 +57,14 @@ __global__ void soa_update(float *posx, float *posy, float *posz, float *velx, f
         vely[id] += y_values[0];
         velz[id] += z_values[0];
     }
-    
-   
+
+
 }
 
 __global__ void soa_move(float *posx, float *posy, float *posz, float *velx,
                          float *vely, float *velz) {
     int id = LINEAR_ID;
-    if ( id < PROBLEMSIZE) {
+    if (id < PROBLEMSIZE) {
         posx[id] += velx[id] * TIMESTEP;
         posy[id] += vely[id] * TIMESTEP;
         posz[id] += velz[id] * TIMESTEP;
@@ -74,7 +74,7 @@ __global__ void soa_move(float *posx, float *posy, float *posz, float *velx,
 
 // Todo create struct to simplify code
 
-struct particles{
+struct particles {
     float x_pos[PROBLEMSIZE];
     float y_pos[PROBLEMSIZE];
     float z_pos[PROBLEMSIZE];
@@ -113,7 +113,6 @@ void soa_run() {
     float *velz_d;
     float *mass_d;
 
-   
 
     HANDLE_ERROR(cudaMalloc(&posx_d, PROBLEMSIZE * sizeof(float)));
     HANDLE_ERROR(cudaMalloc(&posy_d, PROBLEMSIZE * sizeof(float)));
@@ -140,18 +139,18 @@ void soa_run() {
     HANDLE_ERROR(cudaEventCreate(&start2));
     HANDLE_ERROR(cudaEventCreate(&end2));
 
-    float sum_move = 0, sum_update =0;
+    float sum_move = 0, sum_update = 0;
     for (std::size_t s = 0; s < STEPS; ++s) {
-        
+
         HANDLE_ERROR(cudaEventRecord(start, 0));
         soa_update<<<PROBLEMSIZE, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
         cudaEventRecord(end, 0);
 
         cudaEventRecord(start2, 0);
-        soa_move<<<(PROBLEMSIZE+1023) / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
+        soa_move<<<(PROBLEMSIZE + 1023) / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
         HANDLE_ERROR(cudaEventRecord(end2, 0));
         HANDLE_ERROR(cudaEventSynchronize(end2));
-       
+
         float time_update;
         HANDLE_ERROR(cudaEventElapsedTime(&time_update, start, end));
         float time_move;
