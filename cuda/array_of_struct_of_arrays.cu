@@ -37,7 +37,7 @@ __device__ inline void pPInteraction(
     zdistance *= zdistance;
     const float distSqr = EPS2 + xdistance + ydistance + zdistance;
     const float distSixth = distSqr * distSqr * distSqr;
-    const float invDistCube = 1.0f / std::sqrt(distSixth);
+    const float invDistCube = 1.0f / sqrt(distSixth);
     const float sts = pjmass * invDistCube * TIMESTEP;
     *pivelx += xdistance * sts;
     *pively += ydistance * sts;
@@ -45,11 +45,16 @@ __device__ inline void pPInteraction(
 }
 
 __global__ void aosoa_update(particle_block* particles){
-    particle_block mainBlock = particles[blockIdx.x];
-    int mainLane = threadIdx.x;
+    __shared__ particle_block mainBlock;
+    __shared__ particle_block otherBlock;
+    const int mainLane = threadIdx.x;
+    if (threadIdx.x == 0) {
+        mainBlock = particles[blockIdx.x];
+    }    
     for (int otherBlockIndex = 0; otherBlockIndex < BLOCKS; ++otherBlockIndex){
+        SYNC_THREADS;
+        otherBlock = particles[otherBlockIndex];
         for (int otherLane = 0; otherLane < LANES; ++otherLane){
-            particle_block otherBlock = particles[otherBlockIndex];
         pPInteraction( mainBlock.pos.x[mainLane],
             mainBlock.pos.y[mainLane],
             mainBlock.pos.z[mainLane],
@@ -115,15 +120,15 @@ void aosoa_run(){
 
 
     float time_update, time_move;
-    for (int i=0; i< STEPS; ++i) {
+    for (int i = 0; i < STEPS; ++i) {
         // call update
         cudaEventRecord(start_update, 0);
-        aosoa_update<<<(PROBLEMSIZE +LANES-1)/LANES, LANES>>>(particle_block_device);
+        aosoa_update<<<(PROBLEMSIZE + LANES - 1)/LANES, LANES>>>(particle_block_device);
         HANDLE_LAST_ERROR;
         cudaEventRecord(stop_update, 0);
         // call move
         cudaEventRecord(start_move, 0);
-        aosoa_move<<<(PROBLEMSIZE +LANES-1)/LANES, LANES>>>(particle_block_device);
+        aosoa_move<<<(PROBLEMSIZE + LANES - 1)/LANES, LANES>>>(particle_block_device);
         HANDLE_LAST_ERROR;
         cudaEventRecord(stop_move, 0);
 

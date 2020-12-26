@@ -16,7 +16,7 @@
 #define STEPS  5
 #define TIMESTEP 0.0001f 
 #define EPS2 0.01f
-#define LANES 32
+#define LANES 64
 #define BLOCKS PROBLEMSIZE/LANES
 
 
