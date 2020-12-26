@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 int main(void) {
-    // Todo find bug when problemsize is over 64k
+
     print_cuda_infos_at_start();
 	printf("%d k particles (%f kiB)\n", PROBLEMSIZE, 
 		(float)(PROBLEMSIZE * sizeof(float) * 7 / 1024) );

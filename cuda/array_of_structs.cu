@@ -60,23 +60,16 @@ __global__ void aos_move(particle* particles) {
 
 void aos_run(void) {
 
-	// init event management
-	cudaEvent_t start_update, stop_update;
-	cudaEventCreate(&start_update);
-	cudaEventCreate(&stop_update);
 	
-	cudaEvent_t start_move, stop_move;
-	cudaEventCreate(&start_move);
-	cudaEventCreate(&stop_move);
 
-
-
+	printf("Hallo");
 	// init array
-	struct particle particles_host[PROBLEMSIZE];
+	struct particle* particles_host = (particle*) malloc(PROBLEMSIZE * sizeof(particle));
 	struct particle* particles_device;
-	
+	printf("Hallo");
+
 	// fill array with structs of random values
-	for (int i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {
+	for (long i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {
 		for (int j = 0; j < 3; ++j) {
 			particles_host[i].pos[j] = (float)rand();
 			particles_host[i].vel[j] = (float)rand() / 10.0f;
@@ -103,6 +96,16 @@ void aos_run(void) {
 	//		-> run
 	// with time measurement (events)
 	
+	// init event management
+	cudaEvent_t start_update, stop_update;
+	cudaEventCreate(&start_update);
+	cudaEventCreate(&stop_update);
+
+	cudaEvent_t start_move, stop_move;
+	cudaEventCreate(&start_move);
+	cudaEventCreate(&stop_move);
+
+
 	const int num_threads = 1024;
 	const int num_SMs = PROBLEMSIZE/num_threads;
 

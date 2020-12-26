@@ -90,7 +90,7 @@ void aosoa_run() {
     cudaEventCreate(&stop_move);
 
     // "allocate" mem
-    struct particle_block particle_block_host[BLOCKS];
+    struct particle_block* particle_block_host = (particle_block*) malloc(BLOCKS* sizeof(particle_block));
     struct particle_block *particle_block_device;
 
     // fill with random values
