@@ -105,8 +105,9 @@ void aos_run(void) {
 	
 	const int num_threads = 1024;
 	const int num_SMs = PROBLEMSIZE/num_threads;
-	
-	float time_update, time_move;
+
+    float sum_move = 0, sum_update =0;
+    float time_update, time_move;
 	for (int s = 0; s < STEPS; ++s) {
 		
 		cudaEventRecord(start_update, 0);
@@ -123,7 +124,11 @@ void aos_run(void) {
 		cudaEventElapsedTime(&time_update, start_update, stop_update);
 		cudaEventElapsedTime(&time_move, start_move, stop_move);
 		printf("AoS\t%fms\t%fms\n", time_update, time_move);
-	}
+        sum_move += time_move;
+        sum_update += time_update;
+    }
+    printf("AVG:\t%3.4fms\t%3.6fms\n\n", sum_update / STEPS, sum_move / STEPS);
+
 	
 	
 	

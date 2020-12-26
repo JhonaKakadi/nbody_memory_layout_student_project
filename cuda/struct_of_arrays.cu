@@ -140,6 +140,7 @@ void soa_run() {
     HANDLE_ERROR(cudaEventCreate(&start2));
     HANDLE_ERROR(cudaEventCreate(&end2));
 
+    float sum_move = 0, sum_update =0;
     for (std::size_t s = 0; s < STEPS; ++s) {
         
         HANDLE_ERROR(cudaEventRecord(start, 0));
@@ -151,12 +152,15 @@ void soa_run() {
         HANDLE_ERROR(cudaEventRecord(end2, 0));
         HANDLE_ERROR(cudaEventSynchronize(end2));
        
-        float time;
-        HANDLE_ERROR(cudaEventElapsedTime(&time, start, end));
-        float time2;
-        HANDLE_ERROR(cudaEventElapsedTime(&time2, start2, end2));
-        std::cout << "SoA\t" << time << "ms" << '\t' << time2 << "ms" << '\n';
+        float time_update;
+        HANDLE_ERROR(cudaEventElapsedTime(&time_update, start, end));
+        float time_move;
+        HANDLE_ERROR(cudaEventElapsedTime(&time_move, start2, end2));
+        std::cout << "SoA\t" << time_update << "ms" << '\t' << time_move << "ms" << '\n';
+        sum_move += time_move;
+        sum_update += time_update;
     }
+    printf("AVG:\t%3.4fms\t%3.6fms\n\n", sum_update / STEPS, sum_move / STEPS);
 
     // copy back
     HANDLE_ERROR(cudaMemcpy(posx_h, posx_d, PROBLEMSIZE * sizeof(float), cudaMemcpyDeviceToHost));

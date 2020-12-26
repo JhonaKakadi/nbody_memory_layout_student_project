@@ -119,6 +119,7 @@ void aosoa_run(){
     HANDLE_ERROR( cudaMemcpy(particle_block_device, particle_block_host, datasize, cudaMemcpyHostToDevice) );
 
 
+    float sum_move = 0, sum_update =0;
     float time_update, time_move;
     for (int i = 0; i < STEPS; ++i) {
         // call update
@@ -136,7 +137,10 @@ void aosoa_run(){
         cudaEventElapsedTime(&time_update, start_update, stop_update);
         cudaEventElapsedTime(&time_move, start_move, stop_move);
 		printf("AoSoA\t%fms\t%fms\n", time_update, time_move);
+        sum_move += time_move;
+        sum_update += time_update;
     }
+    printf("AVG:\t%3.4fms\t%3.6fms\n\n", sum_update / STEPS, sum_move / STEPS);
 
     // maybe write back
 
