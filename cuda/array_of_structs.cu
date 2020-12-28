@@ -32,12 +32,23 @@ __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle*
 // particles respectively.
 // both particles will be updated.
 //
-__global__ void aos_update(particle* particles) {
-	int id = LINEAR_ID;
-	if (id < PROBLEMSIZE) {
-		for (int j = 0; j < PROBLEMSIZE; ++j) {
-			aos_pp_interaction(&particles[id], &particles[j]);
-			//aos_pp_interaction(&particles[j], &particles[id]);
+__global__ void aos_update(particle* particles) {\
+	int id = LINEAR_ID;		// thread id
+	int chunksize = 1024;
+	
+	__shared__ float particle_chunk[chunksize];
+	
+	// iterate through all chunks
+	for (int chunk = 0; chunk < (PROBLEMSIZE / chunksize); ++chunk) {
+		// update chunk
+		for (int i = 0; i < chunksize; i++) {
+			paricle_chunk[i] = particles[chunk + i];
+		}
+		SYNC_THREADS;
+		
+		// loop through a chunk
+		for (int p = 0; p < chunksize; p++) {
+			aos_pp_interaction(&particle[id], &particles[p]);
 		}
 	}
 }
@@ -59,8 +70,6 @@ __global__ void aos_move(particle* particles) {
 
 
 void aos_run(void) {
-
-	
 
 	// init array
 	struct particle* particles_host = (particle*) malloc(PROBLEMSIZE * sizeof(particle));
@@ -89,6 +98,14 @@ void aos_run(void) {
 	
 	
 	
+	// init kernel parameters
+	const int num_threads = 1024;
+	const int num_blocks = PROBLEMSIZE/num_threads;
+
+	// init event parameters
+    float sum_move = 0, sum_update =0;
+    float time_update, time_move;
+	
 	// loop with STEPS to GPU-compute
 	//		-> update
 	//		-> run
@@ -102,22 +119,16 @@ void aos_run(void) {
 	cudaEvent_t start_move, stop_move;
 	cudaEventCreate(&start_move);
 	cudaEventCreate(&stop_move);
-
-
-	const int num_threads = 1024;
-	const int num_SMs = PROBLEMSIZE/num_threads;
-
-    float sum_move = 0, sum_update =0;
-    float time_update, time_move;
+	
 	for (int s = 0; s < STEPS; ++s) {
 		
 		cudaEventRecord(start_update, 0);
-		aos_update<<< num_SMs, num_threads >>>(particles_device);
+		aos_update<<< num_blocks, num_threads >>>(particles_device);
 		HANDLE_LAST_ERROR;
 		cudaEventRecord(stop_update, 0);
 		
 		cudaEventRecord(start_move, 0);
-		aos_move<<< num_SMs, num_threads >>>(particles_device);
+		aos_move<<< num_blocks, num_threads >>>(particles_device);
 		HANDLE_LAST_ERROR;
 		cudaEventRecord(stop_move, 0);
 		
@@ -132,23 +143,27 @@ void aos_run(void) {
 
 	
 	
-	
 	// actually we don't need the results
 	// but if we did: copy back
 	//HANDLE_ERROR( cudaMemcpy(praticles_host, particles_device, datasize, cudaMemcpyDeviceToHost) );
 	
-	// compute time for the benchmark
-	//float time_update, time_move;
-	//cudaEventElapsedTime(&time_update, start_update, stop_update);
-	//cudaEventElapsedTime(&time_move, start_move, stop_move);
-	
-	// print time
-	//printf("AoS\t%fms\t%fms\n", time_update, time_move);
-	
 	
 	
 	// clean up
-	//delete[] particles_host;
+	free(particles_host);
 	HANDLE_ERROR( cudaFree(particles_device) );	
 	HANDLE_ERROR( cudaDeviceReset() );
 }
+
+// TODO
+// use:
+//__device__ float
+//curand_normal (curandState_t *state)
+// as the following:
+/*
+curandState *state = 
+curand_init(9384, tid, 0, state);
+float rand = curand_normal(state);
+*/
+// taken from
+// https://github.com/deeperlearning/professional-cuda-c-programming/blob/master/examples/chapter08/rand-kernel.cu
