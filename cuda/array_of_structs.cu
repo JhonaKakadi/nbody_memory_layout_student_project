@@ -2,7 +2,7 @@
 #include <math.h>
 #include "shared_header.h"
 
-struct particle {
+struct particle  {
 	float pos[3];
 	float vel[3];
 	float mass;
@@ -76,7 +76,7 @@ void aos_run(void) {
 	struct particle* particles_device;
 
 	// fill array with structs of random values
-	for (long i = 0; i < ( sizeof(particles_host) / sizeof(struct particle) ); ++i) {
+	for (long i = 0; i < PROBLEMSIZE; ++i) {
 		for (int j = 0; j < 3; ++j) {
 			particles_host[i].pos[j] = (float)rand();
 			particles_host[i].vel[j] = (float)rand() / 10.0f;
@@ -90,7 +90,7 @@ void aos_run(void) {
 	
 	
 	// copy data to device
-	int datasize = sizeof(particles_host);
+	unsigned long long datasize = PROBLEMSIZE*sizeof(particle);
 	
 	HANDLE_ERROR( cudaMalloc(&particles_device, datasize) );
 

@@ -60,6 +60,62 @@ __global__ void soa_update(float *posx, float *posy, float *posz, float *velx, f
 
 }
 
+
+__global__ void soa_update2(float* posx, float* posy, float* posz, float* velx, float* vely, float* velz, float* mass) {
+    // one kernel per 1024 particles
+    // 1 thread per particle
+    // Todo choose good names for vars
+    // Note 32 is size of warp
+    int id = LINEAR_ID;
+
+    float x_run = 0;
+    float y_run = 0;
+    float z_run = 0;
+    const float posix = posx[id];
+    const float posiy = posy[id];
+    const float posiz = posz[id];
+    __shared__ float temp_x[1024];
+    __shared__ float temp_y[1024];
+    __shared__ float temp_z[1024];
+    __shared__ float temp_mass[1024];
+    int max_iter = 1024;
+    for (std::size_t j = 0; j < (PROBLEMSIZE + 1023) / 1024; ++j) {
+        // TODO Check for Problemsizes % 1024 != 0
+        if (threadIdx.x + j * 1024 < PROBLEMSIZE) {
+            temp_x[threadIdx.x] = posx[j * 1024 + threadIdx.x];
+            temp_y[threadIdx.x] = posy[j * 1024 + threadIdx.x];
+            temp_z[threadIdx.x] = posz[j * 1024 + threadIdx.x];
+            temp_mass[threadIdx.x] = mass[j * 1024 + threadIdx.x];
+        }
+        SYNC_THREADS;
+        if (id < PROBLEMSIZE) {
+            if (PROBLEMSIZE - (j * 1024) < 1024) {
+                max_iter = PROBLEMSIZE % 1024;
+            }
+            for (int index = 0; index < max_iter; ++index) {
+                const float xdistance = posix - temp_x[index];
+                const float ydistance = posiy - temp_y[index];
+                const float zdistance = posiz - temp_z[index];
+                const float xdistanceSqr = xdistance * xdistance;
+                const float ydistanceSqr = ydistance * ydistance;
+                const float zdistanceSqr = zdistance * zdistance;
+                const float distSqr = EPS2 + xdistanceSqr + ydistanceSqr + zdistanceSqr;
+                const float distSixth = distSqr * distSqr * distSqr;
+                const float invDistCube = 1.0f / sqrt(distSixth);
+                const float sts = temp_mass[index] * invDistCube * TIMESTEP;
+                x_run += xdistanceSqr * sts;
+                y_run += ydistanceSqr * sts;
+                z_run += zdistanceSqr * sts;
+            }
+        }
+        //necessary?
+        SYNC_THREADS;
+    }
+    velx[id] += x_run;
+    vely[id] += y_run;
+    velz[id] += z_run;
+}
+
 __global__ void soa_move(float *posx, float *posy, float *posz, float *velx,
                          float *vely, float *velz) {
     int id = LINEAR_ID;
@@ -132,13 +188,20 @@ void soa_run() {
     //
     cudaEvent_t start, end;
     cudaEvent_t start2, end2;
+    cudaEvent_t start3, end3;
 
     HANDLE_ERROR(cudaEventCreate(&start));
     HANDLE_ERROR(cudaEventCreate(&end));
     HANDLE_ERROR(cudaEventCreate(&start2));
     HANDLE_ERROR(cudaEventCreate(&end2));
+    HANDLE_ERROR(cudaEventCreate(&start3));
+    HANDLE_ERROR(cudaEventCreate(&end3));
 
     float sum_move = 0, sum_update = 0;
+    float time_move;
+    float time_update2;
+    float sum_update2=0;
+    float time_update;
     for (std::size_t s = 0; s < STEPS; ++s) {
 
         HANDLE_ERROR(cudaEventRecord(start, 0));
@@ -146,18 +209,23 @@ void soa_run() {
         HANDLE_LAST_ERROR;
         HANDLE_ERROR(cudaEventRecord(end, 0));
 
+        HANDLE_ERROR(cudaEventRecord(start3, 0));
+        soa_update2 <<<(PROBLEMSIZE + 1023) / 1024, 1024 >> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
+        HANDLE_LAST_ERROR;
+        HANDLE_ERROR(cudaEventRecord(end3, 0));
+        
         HANDLE_ERROR(cudaEventRecord(start2, 0));
         soa_move<<<(PROBLEMSIZE + 1023) / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
+        HANDLE_LAST_ERROR;
         HANDLE_ERROR(cudaEventRecord(end2, 0));
-        HANDLE_ERROR(cudaEventSynchronize(end2));
-
-        float time_update;
+        HANDLE_ERROR(cudaDeviceSynchronize());
         HANDLE_ERROR(cudaEventElapsedTime(&time_update, start, end));
-        float time_move;
         HANDLE_ERROR(cudaEventElapsedTime(&time_move, start2, end2));
-        printf("SoA\t%3.4fms\t%3.4fms\n",time_update, time_move);
+        HANDLE_ERROR(cudaEventElapsedTime(&time_update2, start3, end3));
+        printf("SoA\t%3.4fms\t%3.4fms\t%3.4fms\n",time_update,time_update2, time_move);
         sum_move += time_move;
         sum_update += time_update;
+        sum_update2 += time_update2;
     }
     printf("AVG:\t%3.4fms\t%3.6fms\n\n", sum_update / STEPS, sum_move / STEPS);
 
