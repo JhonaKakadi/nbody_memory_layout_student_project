@@ -85,6 +85,7 @@ void aosoa_run() {
     struct particle_block* particle_block_host = (particle_block*) malloc(BLOCKS* sizeof(particle_block));
     struct particle_block *particle_block_device;
 
+    // TODO Corrrect omitted particels if PROBLEMSIZE not multiple of LANES
     // fill with random values
     // iterate over the structs 'stru' in the array
     for (int stru = 0; stru < BLOCKS; ++stru) {
