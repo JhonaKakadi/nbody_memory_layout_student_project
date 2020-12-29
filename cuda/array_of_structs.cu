@@ -34,20 +34,20 @@ __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle*
 //
 __global__ void aos_update(particle* particles) {\
 	int id = LINEAR_ID;		// thread id
-	int idx = threadIdx.x();
-	int chunksize = 1024;
+	int idx = threadIdx.x;
+	const int chunksize = 1024;
 	
-	__shared__ float particle_chunk[chunksize];
+	__shared__ struct particle particle_chunk[chunksize];
 	
 	// iterate through all chunks
 	for (int chunk = 0; chunk < (PROBLEMSIZE / chunksize); ++chunk) {
 		// update chunk
-		particle_chunk[idx] = particles[idx + chunksize * chunk]
+		particle_chunk[idx] = particles[idx + chunksize * chunk];
 		SYNC_THREADS;
 		
 		// loop through a chunk
 		for (int p = 0; p < chunksize; p++) {
-			aos_pp_interaction(&particle[id], &particles[p]);
+			aos_pp_interaction(&particles[id], &particle_chunk[p]);
 		}
 	}
 }
@@ -65,41 +65,46 @@ __global__ void aos_move(particle* particles) {
 		}
 	}
 }
+
+
+
+__global__ void aos_randNormal(struct particle* particle) {
+	int tid = LINEAR_ID;
+	curandState state;
+	curand_init(1337, tid, 0, &state);
+	
+	// write random values to particle attributes
+	struct particle p = particle[tid];
+	
+	for (int i = 0; i < 3; ++i) {
+		p.pos[i] = curand_normal(&state);
+		p.vel[i] = curand_normal(&state) / 10.0f;
+	}
+	p.mass = curand_normal(&state) / 100.0f;
+}
 	
 
 
 void aos_run(void) {
 
-	// init array
+	// init arrays
 	struct particle* particles_host = (particle*) malloc(PROBLEMSIZE * sizeof(particle));
 	struct particle* particles_device;
-
-	// fill array with structs of random values
-	for (long i = 0; i < PROBLEMSIZE; ++i) {
-		for (int j = 0; j < 3; ++j) {
-			particles_host[i].pos[j] = (float)rand();
-			particles_host[i].vel[j] = (float)rand() / 10.0f;
-		}
-		particles_host[i].mass = (float)rand() / 100.0f;
-		
-		// todo: find rng with normaldistribution
-		// or just use random?
-	}
-	
-	
-	
-	// copy data to device
-	unsigned long long datasize = PROBLEMSIZE*sizeof(particle);
-	
-	HANDLE_ERROR( cudaMalloc(&particles_device, datasize) );
-
-	HANDLE_ERROR( cudaMemcpy(particles_device, particles_host, datasize, cudaMemcpyHostToDevice) );
-	
-	
 	
 	// init kernel parameters
 	const int num_threads = 1024;
 	const int num_blocks = PROBLEMSIZE/num_threads;
+	
+	unsigned long long datasize = PROBLEMSIZE*sizeof(particle);
+	HANDLE_ERROR( cudaMalloc(&particles_device, datasize) );
+	
+	// fill particle_device with random values
+	aos_randNormal<<< num_blocks, num_threads >>>(particles_device);
+	cudaDeviceSynchronize();
+	HANDLE_LAST_ERROR;
+	
+	
+
 
 	// init event parameters
     float sum_move = 0, sum_update =0;
@@ -153,16 +158,3 @@ void aos_run(void) {
 	HANDLE_ERROR( cudaFree(particles_device) );	
 	HANDLE_ERROR( cudaDeviceReset() );
 }
-
-// TODO
-// use:
-//__device__ float
-//curand_normal (curandState_t *state)
-// as the following:
-/*
-curandState *state = 
-curand_init(9384, tid, 0, state);
-float rand = curand_normal(state);
-*/
-// taken from
-// https://github.com/deeperlearning/professional-cuda-c-programming/blob/master/examples/chapter08/rand-kernel.cu

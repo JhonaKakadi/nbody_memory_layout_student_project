@@ -2,12 +2,13 @@
 #define SHARED_HEADER_H
 
 #include "cuda_runtime.h"
-#include "cuda_runtime_api.h"
+//#include "cuda_runtime_api.h"
 #include "device_launch_parameters.h"
-#include "cuda.h"
+#include <cuda.h>
+#include <curand_kernel.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
+//#include <stdlib.h>
+//#include <iostream>
 
 
 // contains global constants
