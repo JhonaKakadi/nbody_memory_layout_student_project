@@ -13,7 +13,7 @@
 
 // contains global constants
 
-#define PROBLEMSIZE 16 * 1024
+#define PROBLEMSIZE 64 * 1024
 #define STEPS  5
 #define TIMESTEP 0.0001f 
 #define EPS2 0.01f

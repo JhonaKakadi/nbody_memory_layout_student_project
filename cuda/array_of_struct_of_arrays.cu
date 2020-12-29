@@ -41,7 +41,7 @@ __device__ inline void pPInteraction(
     *pivelz += zdistance * sts;
 }
 
-__global__ void aosoa_update(particle_block *particles) {
+__global__ void aosoa_update_with_shared(particle_block *particles) {
     // TODO check for not multiple of 32
     __shared__ particle_block mainBlock;
     __shared__ particle_block otherBlock;
@@ -120,7 +120,7 @@ void aosoa_run() {
     for (int i = 0; i < STEPS; ++i) {
         // call update
         HANDLE_ERROR(cudaEventRecord(start_update, 0));
-        aosoa_update<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
+        aosoa_update_with_shared<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
         HANDLE_LAST_ERROR;
         HANDLE_ERROR(cudaEventRecord(stop_update, 0));
         // call move
@@ -136,7 +136,7 @@ void aosoa_run() {
         sum_move += time_move;
         sum_update += time_update;
     }
-    printf("AVG:\t%3.4fms\t%3.6fms\n\n", sum_update / STEPS, sum_move / STEPS);
+    printf("AVG:\t%3.4fms\t%3.6fms\n\n", sum_update / STEPS,  sum_move / STEPS);
 
     // maybe write back
 
