@@ -1,0 +1,31 @@
+echo "ATTENTION: please check problem size"
+echo "large problem size will lead to longer kernel analyzing"
+echo "continue?"
+echo "you have the chance to press CTRL_C now or just enter to continue"
+
+# $> which bash
+#!/usr/bin/bash
+
+echo "cd build"
+cd build
+
+echo "cmake -DCMAKE_BUILD_TYPE=Release .."
+cmake -DCMAKE_BUILD_TYPE=Release ..
+
+echo "make"
+make
+
+echo "rm *.prof"
+rm *.prof
+
+#.nbody
+
+echo "nvprof exports..."
+nvprof --export-profile timeline.prof ./nbody
+nvprof --metrics achieved_occupancy,ipc -o metrics.prof ./nbody
+nvprof --kernels :::1 --analysis-metrics -o analysis.prof ./nbody
+
+echo "cd .."
+cd ..
+
+echo "DONE"
