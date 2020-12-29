@@ -1,10 +1,10 @@
+#!/usr/bin/bash
+# $> which bash
+
 echo "ATTENTION: please check problem size"
 echo "large problem size will lead to longer kernel analyzing"
 echo "continue?"
 echo "you have the chance to press CTRL_C now or just enter to continue"
-
-# $> which bash
-#!/usr/bin/bash
 
 echo "cd build"
 cd build
