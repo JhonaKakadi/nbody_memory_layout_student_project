@@ -34,6 +34,7 @@ __device__ inline void aos_pp_interaction(struct particle* p_i, struct particle*
 //
 __global__ void aos_update(particle* particles) {\
 	int id = LINEAR_ID;		// thread id
+	int idx = threadIdx.x();
 	int chunksize = 1024;
 	
 	__shared__ float particle_chunk[chunksize];
@@ -41,9 +42,7 @@ __global__ void aos_update(particle* particles) {\
 	// iterate through all chunks
 	for (int chunk = 0; chunk < (PROBLEMSIZE / chunksize); ++chunk) {
 		// update chunk
-		for (int i = 0; i < chunksize; i++) {
-			paricle_chunk[i] = particles[chunk + i];
-		}
+		particle_chunk[idx] = particles[idx + chunksize * chunk]
 		SYNC_THREADS;
 		
 		// loop through a chunk
