@@ -1,6 +1,29 @@
 #include "shared_header.h"
 
-__global__ void soa_update_k_shared(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass) {
+
+__device__ inline void
+soa_pp_Interaction(const float posix, const float posiy, const float posiz,
+                   float pos_x_other, float pos_y_other, float pos_z_other, float mass_other,
+                   float *x_run, float *y_run, float *z_run) {
+    const float xdistance = posix - pos_x_other;
+    const float ydistance = posiy - pos_y_other;
+    const float zdistance = posiz - pos_z_other;
+    const float xdistanceSqr = xdistance * xdistance;
+    const float ydistanceSqr = ydistance * ydistance;
+    const float zdistanceSqr = zdistance * zdistance;
+    const float distSqr = EPS2 + xdistanceSqr + ydistanceSqr + zdistanceSqr;
+    const float distSixth = distSqr * distSqr * distSqr;
+    // TODO Use sqrtf() with correct flags
+    const float invDistCube = 1.0f / sqrt(distSixth);
+    const float sts = mass_other * invDistCube * TIMESTEP;
+    *x_run += xdistanceSqr * sts;
+    *y_run += ydistanceSqr * sts;
+    *z_run += zdistanceSqr * sts;
+}
+
+
+__global__ void
+soa_update_k_shared(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass) {
     // one kernel per particle
     // 1024 threads per particle
     // Todo choose good names for vars
@@ -20,19 +43,7 @@ __global__ void soa_update_k_shared(float *posx, float *posy, float *posz, float
 
 
     for (std::size_t j = other; j < PROBLEMSIZE; j += 1024) {
-        const float xdistance = posix - posx[j];
-        const float ydistance = posiy - posy[j];
-        const float zdistance = posiz - posz[j];
-        const float xdistanceSqr = xdistance * xdistance;
-        const float ydistanceSqr = ydistance * ydistance;
-        const float zdistanceSqr = zdistance * zdistance;
-        const float distSqr = EPS2 + xdistanceSqr + ydistanceSqr + zdistanceSqr;
-        const float distSixth = distSqr * distSqr * distSqr;
-        const float invDistCube = 1.0f / sqrt(distSixth);
-        const float sts = mass[j] * invDistCube * TIMESTEP;
-        x_run += xdistanceSqr * sts;
-        y_run += ydistanceSqr * sts;
-        z_run += zdistanceSqr * sts;
+        soa_pp_Interaction(posix, posiy, posiz, posx[j], posy[j], posz[j], mass[j], &x_run, &y_run, &z_run);
     }
     x_values[other] = x_run;
     y_values[other] = y_run;
@@ -59,7 +70,8 @@ __global__ void soa_update_k_shared(float *posx, float *posy, float *posz, float
 }
 
 
-__global__ void soa_update_t_shared(float* posx, float* posy, float* posz, float* velx, float* vely, float* velz, float* mass) {
+__global__ void
+soa_update_t_shared(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass) {
     // one kernel per 1024 particles
     // 1 thread per particle
     // Todo choose good names for vars
@@ -90,20 +102,7 @@ __global__ void soa_update_t_shared(float* posx, float* posy, float* posz, float
                 max_iter = PROBLEMSIZE % 1024;
             }
             for (int index = 0; index < max_iter; ++index) {
-                const float xdistance = posix - temp_x[index];
-                const float ydistance = posiy - temp_y[index];
-                const float zdistance = posiz - temp_z[index];
-                const float xdistanceSqr = xdistance * xdistance;
-                const float ydistanceSqr = ydistance * ydistance;
-                const float zdistanceSqr = zdistance * zdistance;
-                const float distSqr = EPS2 + xdistanceSqr + ydistanceSqr + zdistanceSqr;
-                const float distSixth = distSqr * distSqr * distSqr;
-                // TODO Use sqrtf() with correct flags
-                const float invDistCube = 1.0f / sqrt(distSixth);
-                const float sts = temp_mass[index] * invDistCube * TIMESTEP;
-                x_run += xdistanceSqr * sts;
-                y_run += ydistanceSqr * sts;
-                z_run += zdistanceSqr * sts;
+                soa_pp_Interaction(posix, posiy, posiz, temp_x[index], temp_y[index], temp_z[index], temp_mass[index], &x_run, &y_run, &z_run);
             }
         }
         //necessary?
@@ -197,22 +196,23 @@ void soa_run() {
     HANDLE_ERROR(cudaEventCreate(&end_move));
 
     float sum_move = 0, sum_update = 0;
-    float sum_update2=0;
+    float sum_update2 = 0;
     float time_move;
     float time_update_k_shared;
     float time_update_t_shared;
     for (std::size_t s = 0; s < STEPS; ++s) {
 
         HANDLE_ERROR(cudaEventRecord(start_update_k_shared, 0));
-        soa_update_k_shared<<<PROBLEMSIZE, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
+        soa_update_k_shared <<<PROBLEMSIZE, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
         HANDLE_ERROR(cudaEventRecord(end_update_k_shared, 0));
 
         HANDLE_ERROR(cudaEventRecord(start_update_t_shared, 0));
-        soa_update_t_shared <<<(PROBLEMSIZE + 1023) / 1024, 1024 >> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
+        soa_update_t_shared <<<(PROBLEMSIZE + 1023) / 1024, 1024 >>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d,
+                                                                     mass_d);
         HANDLE_ERROR(cudaEventRecord(end_update_t_shared, 0));
-        
+
         HANDLE_ERROR(cudaEventRecord(start_move, 0));
-        soa_move<<<(PROBLEMSIZE + 1023) / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
+        soa_move <<<(PROBLEMSIZE + 1023) / 1024, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d);
         HANDLE_ERROR(cudaEventRecord(end_move, 0));
 
         HANDLE_ERROR(cudaDeviceSynchronize());
@@ -220,12 +220,12 @@ void soa_run() {
         HANDLE_ERROR(cudaEventElapsedTime(&time_update_k_shared, start_update_k_shared, end_update_k_shared));
         HANDLE_ERROR(cudaEventElapsedTime(&time_update_t_shared, start_update_t_shared, end_update_t_shared));
         HANDLE_ERROR(cudaEventElapsedTime(&time_move, start_move, end_move));
-        printf("SoA\t%3.4fms\t%3.4fms\t%3.4fms\n",time_update_k_shared,time_update_t_shared, time_move);
+        printf("SoA\t%3.4fms\t%3.4fms\t%3.4fms\n", time_update_k_shared, time_update_t_shared, time_move);
         sum_move += time_move;
         sum_update += time_update_k_shared;
         sum_update2 += time_update_t_shared;
     }
-    printf("AVG:\t%3.4fms\t%3.4fms\t%3.6fms\n\n", sum_update / STEPS, sum_update2/STEPS, sum_move / STEPS);
+    printf("AVG:\t%3.4fms\t%3.4fms\t%3.6fms\n\n", sum_update / STEPS, sum_update2 / STEPS, sum_move / STEPS);
 
     // copy back
     HANDLE_ERROR(cudaMemcpy(posx_h, posx_d, PROBLEMSIZE * sizeof(float), cudaMemcpyDeviceToHost));
