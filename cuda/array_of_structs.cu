@@ -107,7 +107,7 @@ void aos_run(void) {
 
 	// fill particle_device with random values
 	aos_randNormal<<< num_blocks, num_threads >>>(particles_device);
-	cudaDeviceSynchronize();
+	HANDLE_ERROR( cudaDeviceSynchronize() );
 	HANDLE_LAST_ERROR;
 
 
@@ -124,38 +124,36 @@ void aos_run(void) {
 	
 	// init event management
 	cudaEvent_t start_update_t, stop_update_t;
-	cudaEventCreate(&start_update_t);
-	cudaEventCreate(&stop_update_t);
+	HANDLE_ERROR( cudaEventCreate(&start_update_t) );
+	HANDLE_ERROR( cudaEventCreate(&stop_update_t) );
+	
 	cudaEvent_t start_update_t_shared, stop_update_t_shared;
-	cudaEventCreate(&start_update_t_shared);
-	cudaEventCreate(&stop_update_t_shared);
+	HANDLE_ERROR( cudaEventCreate(&start_update_t_shared) );
+	HANDLE_ERROR( cudaEventCreate(&stop_update_t_shared) );
 
 	cudaEvent_t start_move, stop_move;
-	cudaEventCreate(&start_move);
-	cudaEventCreate(&stop_move);
+	HANDLE_ERROR( cudaEventCreate(&start_move) );
+	HANDLE_ERROR( cudaEventCreate(&stop_move) );
 	
 	for (int s = 0; s < STEPS; ++s) {
 
-		cudaEventRecord(start_update_t, 0);
+		HANDLE_ERROR( cudaEventRecord(start_update_t, 0) );
 		aos_update_t<<< num_blocks, num_threads >>>(particles_device);
-		HANDLE_LAST_ERROR;
-		cudaEventRecord(stop_update_t, 0);
+		HANDLE_ERROR( cudaEventRecord(stop_update_t, 0) );
 		
-		cudaEventRecord(start_update_t_shared, 0);
-		aos_update_t_shared<<< num_blocks, num_threads >> > (particles_device);
-		HANDLE_LAST_ERROR;
-		cudaEventRecord(stop_update_t_shared, 0);
+		HANDLE_ERROR( cudaEventRecord(start_update_t_shared, 0) );
+		aos_update_t_shared<<< num_blocks, num_threads >>>(particles_device);
+		HANDLE_ERROR( cudaEventRecord(stop_update_t_shared, 0) );
 
-
-		cudaEventRecord(start_move, 0);
+		HANDLE_ERROR( cudaEventRecord(start_move, 0) );
 		aos_move<<< num_blocks, num_threads >>>(particles_device);
-		HANDLE_LAST_ERROR;
-		cudaEventRecord(stop_move, 0);
+		HANDLE_ERROR( cudaEventRecord(stop_move, 0) );
 		
-		cudaEventSynchronize(stop_move);
-		cudaEventElapsedTime(&time_update_t, start_update_t, stop_update_t);
-		cudaEventElapsedTime(&time_update_t_shared, start_update_t_shared, stop_update_t_shared);
-		cudaEventElapsedTime(&time_move, start_move, stop_move);
+		HANDLE_ERROR( cudaEventSynchronize(stop_move) );
+		HANDLE_ERROR( cudaEventElapsedTime(&time_update_t, start_update_t, stop_update_t) );
+		HANDLE_ERROR( cudaEventElapsedTime(&time_update_t_shared, start_update_t_shared, stop_update_t_shared) );
+		HANDLE_ERROR( cudaEventElapsedTime(&time_move, start_move, stop_move) );
+		
 		printf("AoS\t%fms\t%fms\t%fms\n", time_update_t, time_update_t_shared, time_move);
         sum_move += time_move;
         sum_update += time_update_t;

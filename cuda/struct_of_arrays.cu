@@ -2,7 +2,7 @@
 
 
 __device__ inline void
-soa_pp_Interaction(const float posix, const float posiy, const float posiz,
+soa_pp_interaction(const float posix, const float posiy, const float posiz,
                    float pos_x_other, float pos_y_other, float pos_z_other, float mass_other,
                    float *x_run, float *y_run, float *z_run) {
     const float xdistance = posix - pos_x_other;
@@ -39,7 +39,7 @@ soa_update_k(float* posx, float* posy, float* posz, float* velx, float* vely, fl
     const float posiz = posz[id];
 
     for (std::size_t j = other; j < PROBLEMSIZE; j += 1024) {
-        soa_pp_Interaction(posix, posiy, posiz, posx[j], posy[j], posz[j], mass[j], &x_run, &y_run, &z_run);
+        soa_pp_interaction(posix, posiy, posiz, posx[j], posy[j], posz[j], mass[j], &x_run, &y_run, &z_run);
     }
     atomicAdd(&velx[id], x_run);
     atomicAdd(&vely[id], y_run);
@@ -69,7 +69,7 @@ soa_update_k_shared(float *posx, float *posy, float *posz, float *velx, float *v
 
 
     for (std::size_t j = other; j < PROBLEMSIZE; j += 1024) {
-        soa_pp_Interaction(posix, posiy, posiz, posx[j], posy[j], posz[j], mass[j], &x_run, &y_run, &z_run);
+        soa_pp_interaction(posix, posiy, posiz, posx[j], posy[j], posz[j], mass[j], &x_run, &y_run, &z_run);
     }
     x_values[other] = x_run;
     y_values[other] = y_run;
@@ -117,7 +117,7 @@ soa_update_t(float* posx, float* posy, float* posz, float* velx, float* vely, fl
     int max_iter = 1024;
     for (std::size_t other = 0; other < PROBLEMSIZE; ++other) {
         if (id < PROBLEMSIZE) {
-            soa_pp_Interaction(posix, posiy, posiz, posx[other], posy[other], posz[other], mass[other], &x_run, &y_run, &z_run);
+            soa_pp_interaction(posix, posiy, posiz, posx[other], posy[other], posz[other], mass[other], &x_run, &y_run, &z_run);
         }
     }
     velx[id] += x_run;
@@ -159,7 +159,7 @@ soa_update_t_shared(float *posx, float *posy, float *posz, float *velx, float *v
                 max_iter = PROBLEMSIZE % 1024;
             }
             for (int index = 0; index < max_iter; ++index) {
-                soa_pp_Interaction(posix, posiy, posiz, temp_x[index], temp_y[index], temp_z[index], temp_mass[index], &x_run, &y_run, &z_run);
+                soa_pp_interaction(posix, posiy, posiz, temp_x[index], temp_y[index], temp_z[index], temp_mass[index], &x_run, &y_run, &z_run);
             }
         }
         //necessary?
@@ -246,17 +246,7 @@ void soa_run() {
 
     soa_randNormal<<<(PROBLEMSIZE+1023)/1024,1024>>>(posx_d,posy_d,posz_d,velx_d,vely_d,velz_d,mass_d);
 
-    // copy points to Device
-    /*
-    HANDLE_ERROR(cudaMemcpy(posx_d, posx_h, PROBLEMSIZE * sizeof(float), cudaMemcpyHostToDevice));
-    HANDLE_ERROR(cudaMemcpy(posy_d, posy_h, PROBLEMSIZE * sizeof(float), cudaMemcpyHostToDevice));
-    HANDLE_ERROR(cudaMemcpy(posz_d, posz_h, PROBLEMSIZE * sizeof(float), cudaMemcpyHostToDevice));
-    HANDLE_ERROR(cudaMemcpy(velx_d, velx_h, PROBLEMSIZE * sizeof(float), cudaMemcpyHostToDevice));
-    HANDLE_ERROR(cudaMemcpy(vely_d, vely_h, PROBLEMSIZE * sizeof(float), cudaMemcpyHostToDevice));
-    HANDLE_ERROR(cudaMemcpy(velz_d, velz_h, PROBLEMSIZE * sizeof(float), cudaMemcpyHostToDevice));
-    HANDLE_ERROR(cudaMemcpy(mass_d, mass_h, PROBLEMSIZE * sizeof(float), cudaMemcpyHostToDevice));
-    */
-    //
+
     cudaEvent_t start_update_k, end_update_k;
     cudaEvent_t start_update_k_shared, end_update_k_shared;
     cudaEvent_t start_update_t, end_update_t;

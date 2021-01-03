@@ -15,7 +15,7 @@ struct particle_block        // deleted alignas(64)
     float mass[LANES];
 };
 
-__device__ inline void pPInteraction(
+__device__ inline void aosoa_pp_interaction(
         float piposx,
         float piposy,
         float piposz,
@@ -41,7 +41,7 @@ __device__ inline void pPInteraction(
     *pivelz += zdistance * sts;
 }
 
-__global__ void aosoa_update_shared(particle_block *particles) {
+__global__ void aosoa_update_t_shared(particle_block *particles) {
     // TODO check for not multiple of 32
     __shared__ particle_block mainBlock;
     __shared__ particle_block otherBlock;
@@ -53,7 +53,7 @@ __global__ void aosoa_update_shared(particle_block *particles) {
         otherBlock = particles[otherBlockIndex];
         SYNC_THREADS;
         for (int otherLane = 0; otherLane < LANES; ++otherLane) {
-            pPInteraction(mainBlock.pos.x[mainLane],
+            aosoa_pp_interaction(mainBlock.pos.x[mainLane],
                           mainBlock.pos.y[mainLane],
                           mainBlock.pos.z[mainLane],
                           &mainBlock.vel.x[mainLane],
@@ -67,7 +67,7 @@ __global__ void aosoa_update_shared(particle_block *particles) {
     }
 }
 
-__global__ void aosoa_update(particle_block *particles) {
+__global__ void aosoa_update_t(particle_block *particles) {
     // TODO check for not multiple of 32
     particle_block mainBlock = particles[blockIdx.x];
     particle_block otherBlock;
@@ -75,7 +75,7 @@ __global__ void aosoa_update(particle_block *particles) {
     for (int otherBlockIndex = 0; otherBlockIndex < BLOCKS; ++otherBlockIndex) {
         otherBlock = particles[otherBlockIndex];
         for (int otherLane = 0; otherLane < LANES; ++otherLane) {
-            pPInteraction(mainBlock.pos.x[mainLane],
+            aosoa_pp_interaction(mainBlock.pos.x[mainLane],
                           mainBlock.pos.y[mainLane],
                           mainBlock.pos.z[mainLane],
                           &mainBlock.vel.x[mainLane],
@@ -107,9 +107,9 @@ __global__ void aosoa_randNormal(particle_block* particle_blocks) {
     curand_init(1337, lane, 0, &state);
   
     // iterate over pos-array inside the struct, then over the vel-arrays, then mass-array
-    particle_blocks[block].pos.x[lane] = curand_normal(&state);;
-    particle_blocks[block].pos.y[lane] = curand_normal(&state);;
-    particle_blocks[block].pos.z[lane] = curand_normal(&state);;
+    particle_blocks[block].pos.x[lane] = curand_normal(&state);
+    particle_blocks[block].pos.y[lane] = curand_normal(&state);
+    particle_blocks[block].pos.z[lane] = curand_normal(&state);
     particle_blocks[block].vel.x[lane] = curand_normal(&state) / 10.0f;
     particle_blocks[block].vel.y[lane] = curand_normal(&state) / 10.0f;
     particle_blocks[block].vel.z[lane] = curand_normal(&state) / 10.0f;
@@ -145,11 +145,10 @@ void aosoa_run() {
 
    
 
-
     int datasize = BLOCKS*sizeof(particle_block);
     HANDLE_ERROR(cudaMalloc(&particle_block_device, datasize));
     // HANDLE_ERROR(cudaMemcpy(particle_block_device, particle_block_host, datasize, cudaMemcpyHostToDevice));
-    aosoa_randNormal <<<BLOCKS, LANES >> > (particle_block_device);
+    aosoa_randNormal <<< BLOCKS, LANES >>> (particle_block_device);
     // init event management
     cudaEvent_t start_update, stop_update;
     HANDLE_ERROR(cudaEventCreate(&start_update));
@@ -167,16 +166,16 @@ void aosoa_run() {
     for (int i = 0; i < STEPS; ++i) {
         // call update
         HANDLE_ERROR(cudaEventRecord(start_update, 0));
-        aosoa_update<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
+        aosoa_update_t<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
         HANDLE_ERROR(cudaEventRecord(stop_update, 0));
         
         HANDLE_ERROR(cudaEventRecord(start_update_shared, 0));
-        aosoa_update_shared<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
+        aosoa_update_t_shared<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
         HANDLE_ERROR(cudaEventRecord(stop_update_shared, 0));
 
         // call move
         HANDLE_ERROR(cudaEventRecord(start_move, 0));
-        aosoa_move << <(PROBLEMSIZE + LANES - 1) / LANES, LANES >> > (particle_block_device);
+        aosoa_move << <(PROBLEMSIZE + LANES - 1) / LANES, LANES >>> (particle_block_device);
         HANDLE_ERROR(cudaEventRecord(stop_move));
 
         HANDLE_ERROR(cudaEventSynchronize(stop_move));
