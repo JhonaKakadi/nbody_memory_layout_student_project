@@ -3,3 +3,12 @@ cpp/cmake-build-debug
 cpp/.idea
 
 .idea
+
+presentation_latex/hpgpu-project-presentation.aux
+presentation_latex/hpgpu-project-presentation.log
+presentation_latex/hpgpu-project-presentation.nav
+presentation_latex/hpgpu-project-presentation.out
+presentation_latex/hpgpu-project-presentation.snm
+presentation_latex/hpgpu-project-presentation.synctex.gz
+presentation_latex/hpgpu-project-presentation.tex.bak
+presentation_latex/hpgpu-project-presentation.toc
