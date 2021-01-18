@@ -1,6 +1,5 @@
 #include "shared_header.h"
 
-
 __device__ inline void
 soa_pp_interaction(const float posix, const float posiy, const float posiz,
                    float pos_x_other, float pos_y_other, float pos_z_other, float mass_other,

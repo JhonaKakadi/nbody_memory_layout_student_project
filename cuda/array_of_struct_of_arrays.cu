@@ -163,6 +163,8 @@ void aosoa_run() {
     HANDLE_ERROR(cudaEventCreate(&stop_move));
     float sum_move = 0, sum_update = 0, sum_update_shared = 0;
     float time_update, time_update_shared, time_move;
+	
+	printf("Benchmarks: Thread, \tThread_shared, \tmove\n");
     for (int i = 0; i < STEPS; ++i) {
         // call update
         HANDLE_ERROR(cudaEventRecord(start_update, 0));
@@ -182,7 +184,7 @@ void aosoa_run() {
         HANDLE_ERROR(cudaEventElapsedTime(&time_update, start_update, stop_update));
         HANDLE_ERROR(cudaEventElapsedTime(&time_update_shared, start_update_shared, stop_update_shared));
         HANDLE_ERROR(cudaEventElapsedTime(&time_move, start_move, stop_move));
-        printf("AoSoA\t%3.4fms\t%3.4fms\t%3.4fms\n", time_update,time_update_shared, time_move);
+        printf("AoSoA\t%3.4fms\t%3.4fms\t%3.6fms\n", time_update,time_update_shared, time_move);
         sum_move += time_move;
         sum_update += time_update;
         sum_update_shared += time_update_shared;

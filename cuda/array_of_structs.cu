@@ -9,30 +9,54 @@ struct particle  {
 };
 
 
-
-__device__ inline void aos_pp_interaction(struct particle* p_i, struct particle* p_j) {
-	float distance_sqr_x = (p_i->pos[0] - p_j->pos[0]) * (p_i->pos[0] - p_j->pos[0]);
-	float distance_sqr_y = (p_i->pos[1] - p_j->pos[1]) * (p_i->pos[1] - p_j->pos[1]);
-	float distance_sqr_z = (p_i->pos[2] - p_j->pos[2]) * (p_i->pos[2] - p_j->pos[2]);
+// in this version we are using registers instead of
+//__device__ inline void aos_pp_interaction(struct particle* p_i, struct particle* p_j)
+//
+__device__ inline void aos_pp_interaction(float i_pos_x, float i_pos_y, float i_pos_z, float* i_vel_x, float* i_vel_y, float* i_vel_z,
+										  float j_pos_x, float j_pos_y, float j_pos_z, float j_mass) {
+	float distance_sqr_x = (i_pos_x - j_pos_x) * (i_pos_x - j_pos_x);
+	float distance_sqr_y = (i_pos_y - j_pos_y) * (i_pos_y - j_pos_y);
+	float distance_sqr_z = (i_pos_z - j_pos_z) * (i_pos_z - j_pos_z);
 	
 	const float dist_sqr = EPS2 + distance_sqr_x + distance_sqr_y + distance_sqr_z;
 	const float dist_sixth = dist_sqr * dist_sqr * dist_sqr;
 	const float inv_dist_cube = 1.0f / sqrt(dist_sixth);		// use cudaSqrt for performance, double is problematic
-	const float sts = p_j->mass * inv_dist_cube * TIMESTEP;
+	const float sts = j_mass * inv_dist_cube * TIMESTEP;
 	
-	p_i->vel[0] += distance_sqr_x * sts;
-	p_i->vel[1] += distance_sqr_y * sts;
-	p_i->vel[2] += distance_sqr_z * sts;
+	(*i_vel_x) += distance_sqr_x * sts;
+	(*i_vel_y) += distance_sqr_y * sts;
+	(*i_vel_z) += distance_sqr_z * sts;
 }
-
 
 
 __global__ void aos_update_t(particle* particles) {
     int id = LINEAR_ID;		// thread id
+	
+	// get single data from struct particle
+	float i_pos_x = particles[id].pos[0];
+    float i_pos_y = particles[id].pos[1];
+    float i_pos_z = particles[id].pos[2];
+	float i_vel_x = particles[id].vel[0];
+	float i_vel_y = particles[id].vel[1];
+	float i_vel_z = particles[id].vel[2];
+	
     // iterate through all chunks
     for (int other = 0; other < PROBLEMSIZE; ++other) {
-        // loop through a chunk
-        aos_pp_interaction(&particles[id], &particles[other]);
+	
+		// get single data from struct particle
+		float j_pos_x = particles[other].pos[0];
+        float j_pos_y = particles[other].pos[1];
+        float j_pos_z = particles[other].pos[2];
+		float j_mass = particles[other].mass;
+		
+		// loop through a chunk
+        aos_pp_interaction(i_pos_x, i_pos_y, i_pos_z, &i_vel_x, &i_vel_y, &i_vel_z,
+						   j_pos_x, j_pos_y, j_pos_z, j_mass);
+						   
+		// write back copied values
+		particles->vel[0] = i_vel_x;
+		particles->vel[1] = i_vel_y;
+		particles->vel[2] = i_vel_z;
     }
 }
 
@@ -47,6 +71,14 @@ __global__ void aos_update_t_shared(particle* particles) {\
 	const int chunksize = 1024;
 
 	__shared__ particle particle_chunk[chunksize];
+	
+	// get single data from struct particle
+	float i_pos_x = particles[id].pos[0];
+    float i_pos_y = particles[id].pos[1];
+    float i_pos_z = particles[id].pos[2];
+	float i_vel_x = particles[id].vel[0];
+	float i_vel_y = particles[id].vel[1];
+	float i_vel_z = particles[id].vel[2];
 
 	// iterate through all chunks
 	for (int chunk = 0; chunk < (PROBLEMSIZE / chunksize); ++chunk) {
@@ -56,7 +88,21 @@ __global__ void aos_update_t_shared(particle* particles) {\
 
 		// loop through a chunk
 		for (int p = 0; p < chunksize; p++) {
-			aos_pp_interaction(&particles[id], &particle_chunk[p]);
+		
+			// get single data from struct particle
+			float j_pos_x = particle_chunk[p].pos[0];
+			float j_pos_y = particle_chunk[p].pos[1];
+			float j_pos_z = particle_chunk[p].pos[2];
+			float j_mass = particle_chunk[p].mass;
+			
+			
+			aos_pp_interaction(i_pos_x, i_pos_y, i_pos_z, &i_vel_x, &i_vel_y, &i_vel_z,
+						       j_pos_x, j_pos_y, j_pos_z, j_mass);
+							   
+			// write back copied values
+			particles->vel[0] = i_vel_x;
+			particles->vel[1] = i_vel_y;
+			particles->vel[2] = i_vel_z;
 		}
 	}
 }
@@ -88,6 +134,8 @@ __global__ void aos_randNormal(struct particle* particle) {
 		p.vel[i] = curand_normal(&state) / 10.0f;
 	}
 	p.mass = curand_normal(&state) / 100.0f;
+	
+	particle[tid] = p;
 }
 
 
@@ -135,6 +183,7 @@ void aos_run(void) {
 	HANDLE_ERROR( cudaEventCreate(&start_move) );
 	HANDLE_ERROR( cudaEventCreate(&stop_move) );
 	
+	printf("Benchmarks: Thread, \tThread_shared, \tmove\n");
 	for (int s = 0; s < STEPS; ++s) {
 
 		HANDLE_ERROR( cudaEventRecord(start_update_t, 0) );
@@ -154,7 +203,7 @@ void aos_run(void) {
 		HANDLE_ERROR( cudaEventElapsedTime(&time_update_t_shared, start_update_t_shared, stop_update_t_shared) );
 		HANDLE_ERROR( cudaEventElapsedTime(&time_move, start_move, stop_move) );
 		
-		printf("AoS\t%fms\t%fms\t%fms\n", time_update_t, time_update_t_shared, time_move);
+		printf("AoS\t%3.4fms\t%3.4fms\t%3.6fms\n", time_update_t, time_update_t_shared, time_move);
         sum_move += time_move;
         sum_update += time_update_t;
         sum_update_shared += time_update_t_shared;

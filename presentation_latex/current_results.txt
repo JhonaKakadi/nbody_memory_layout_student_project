@@ -1,0 +1,115 @@
+TESTED ON
+Name of Device: Tesla K80
+CC-Version is: 3.7
+SM-Count: 13
+Warp-size: 32
+One Block has 65536 Registers and one SM can handle 2048 Threads
+One Block can handle: 1024 Threads
+While one Block can have the dimensions: X = 1024 Y = 1024 Z = 64
+And the grid can have the form of: X = 2147483647 Y = 65535 Z = 65535
+_____________________________________________________________________________________
+16 k particles (448.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  Move
+AoS                                     56.5121ms       17.3868ms       0.036544ms
+AoS                                     56.4797ms       17.4133ms       0.033280ms
+AoS					54.9357ms       15.6404ms       0.033632ms
+AoS                                     50.7257ms       15.6060ms       0.032544ms
+AoS                                     50.7504ms       15.5858ms       0.032768ms
+AVG:                                    53.8807ms       16.3264ms       0.033754ms
+
+Benchmarks: Kernel,     Kernel_shared,  Thread,     	Thread_shared,  Move
+SoA     55.0906ms       21.4492ms       22.8277ms       14.2324ms       0.0110ms
+SoA     54.3634ms       21.4436ms       22.8197ms       13.0962ms       0.0083ms
+SoA     49.3135ms       19.3027ms       20.4029ms       12.7189ms       0.0083ms
+SoA     48.4277ms       18.4641ms       18.8272ms       11.7521ms       0.0092ms
+SoA     44.3154ms       17.7516ms       18.8140ms       11.7349ms       0.0092ms
+AVG:    50.3021ms       19.6823ms       20.7383ms       12.7069ms       0.009184ms
+
+Benchmarks:                             Thread,         Thread_shared,  Move
+AoSoA                                   28.2286ms       43.9762ms       0.222112ms
+AoSoA                                   28.2296ms       43.6562ms       0.220672ms
+AoSoA                                   28.2461ms       43.9120ms       0.221504ms
+AoSoA                                   28.2501ms       43.8764ms       0.222688ms
+AoSoA                                   28.2302ms       44.0284ms       0.218080ms
+AVG:                                    28.2369ms       43.8898ms       0.221011ms
+
+
+
+32 k particles (896.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  Move
+AoS                                     218.4318ms      60.5526ms       0.043840ms
+AoS                                     186.3093ms      53.8177ms       0.042656ms
+AoS                                     161.7010ms      45.2350ms       0.032576ms
+AoS                                     147.7971ms      43.7835ms       0.033504ms
+AoS                                     142.6965ms      43.7882ms       0.031296ms
+AVG:                                    171.3872ms      49.4354ms       0.036774ms
+
+Benchmarks: Kernel,     Kernel_shared,  Thread,         Thread_shared,  Move
+SoA     96.8798ms       59.1961ms       70.2886ms       44.4813ms       0.0099ms
+SoA     96.2717ms       59.4221ms       70.3054ms       44.5191ms       0.0111ms
+SoA     96.6742ms       59.1365ms       70.3160ms       44.4275ms       0.0110ms
+SoA     96.9429ms       59.2334ms       70.3331ms       44.4133ms       0.0110ms
+SoA     96.6223ms       59.2447ms       70.3289ms       44.4718ms       0.0098ms
+AVG:    96.6782ms       59.2466ms       70.3144ms       44.4626ms       0.010560ms
+
+Benchmarks:                             Thread,         Thread_shared,  Move
+AoSoA                                   94.5395ms       148.6588ms      0.428192ms
+AoSoA                                   94.5351ms       149.7254ms      0.429504ms
+AoSoA                                   94.5346ms       149.1124ms      0.434144ms
+AoSoA                                   94.5424ms       148.9957ms      0.433728ms
+AoSoA                                   94.5413ms       148.6564ms      0.429408ms
+AVG:                                    94.5386ms       149.0298ms      0.430995ms
+
+
+
+65 k particles (1792.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  Move
+AoS                                     721.9747ms      134.5631ms      0.059872ms
+AoS                                     537.1900ms      132.4484ms      0.052544ms
+AoS                                     565.2080ms      131.4625ms      0.056256ms
+AoS                                     564.9940ms      132.3905ms      0.056992ms
+AoS                                     565.9567ms      132.5669ms      0.050304ms
+AVG:                                    591.0646ms      132.6863ms      0.055194ms
+
+Benchmarks: Kernel,     Kernel_shared,  Thread,         Thread_shared,  Move
+SoA     263.6722ms      214.9559ms      213.8620ms      134.4376ms      0.0186ms
+SoA     264.3197ms      215.0839ms      213.8465ms      134.4751ms      0.0177ms
+SoA     264.4698ms      215.1121ms      213.8621ms      134.5255ms      0.0177ms
+SoA     264.9737ms      215.2173ms      213.8729ms      134.5970ms      0.0165ms
+SoA     263.6458ms      215.1703ms      213.8536ms      134.5345ms      0.0177ms
+AVG:    264.2162ms      215.1079ms      213.8594ms      134.5139ms      0.017632ms
+
+Benchmarks:                             Thread,         Thread_shared,  Move
+AoSoA                                   378.0437ms      596.3137ms      0.852480ms
+AoSoA                                   377.9416ms      596.1557ms      0.853856ms
+AoSoA                                   377.9363ms      596.3188ms      0.845728ms
+AoSoA                                   377.9630ms      596.3988ms      0.852064ms
+AoSoA                                   377.9603ms      596.2109ms      0.848960ms
+AVG:                                    377.9690ms      596.2796ms      0.850618ms
+
+
+
+131 k particles (3584.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  Move
+AoS                                     2323.3457ms     458.6556ms      0.096544ms
+AoS                                     2155.2690ms     459.2087ms      0.096512ms
+AoS                                     2134.2544ms     458.9369ms      0.097440ms
+AoS                                     2164.0598ms     459.3103ms      0.099872ms
+AoS                                     2156.1831ms     459.4745ms      0.099712ms
+AVG:                                    2186.6223ms     459.1172ms      0.098016ms
+
+Benchmarks: Kernel,     Kernel_shared,  Thread,         Thread_shared,  Move
+SoA     901.4296ms      856.9327ms      739.2853ms      479.2048ms      0.0380ms
+SoA     913.0090ms      856.9944ms      740.3595ms      477.7679ms      0.0381ms
+SoA     917.3915ms      857.3723ms      741.7971ms      477.5698ms      0.0371ms
+SoA     914.4026ms      857.3637ms      736.3165ms      475.9360ms      0.0382ms
+SoA     918.2243ms      857.4695ms      737.7902ms      480.1158ms      0.0382ms
+AVG:    912.8914ms      857.2266ms      739.1097ms      478.1188ms      0.037926ms
+
+Benchmarks:                             Thread,         Thread_shared,  Move
+AoSoA                                   1524.6169ms     2387.5400ms     1.688928ms
+AoSoA                                   1508.0356ms     2388.2383ms     1.692384ms
+AoSoA                                   1507.7407ms     2386.6562ms     1.696384ms
+AoSoA                                   1507.8685ms     2385.4614ms     1.690624ms
+AoSoA                                   1507.6187ms     2393.7422ms     1.690976ms
+AVG:                                    1511.1761ms     2388.3276ms     1.691859ms
