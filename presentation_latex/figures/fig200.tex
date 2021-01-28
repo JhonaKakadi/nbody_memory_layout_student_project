@@ -19,8 +19,8 @@
 		symbolic x coords={AoS, SoA, AoSoA},
 		xtick=data,
 		yticklabel style={rotate=90},
-		ymin=0, ymax=150,
-		ytick={0,30,60,90,120,150},
+		ymin=0, ymax=30,
+		ytick={0,6,12,18,24,30},
 		ybar=5pt,
 		ymajorgrids=true,
 		grid style=dashed,
@@ -30,9 +30,9 @@
 		
     \addplot%+[only marks, mark=-]
     	coordinates {    		
-    		(AoS, 0)
-    		(SoA, 0)
-    		(AoSoA, 0)
+    		(AoS, 19.59)
+    		(SoA, 21.54)
+    		(AoSoA, 26.98)
     	};
   \end{axis}
 \end{tikzpicture}
