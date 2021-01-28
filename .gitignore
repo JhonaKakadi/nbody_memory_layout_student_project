@@ -12,3 +12,8 @@ presentation_latex/hpgpu-project-presentation.snm
 presentation_latex/hpgpu-project-presentation.synctex.gz
 presentation_latex/hpgpu-project-presentation.tex.bak
 presentation_latex/hpgpu-project-presentation.toc
+
+presentation_latex/figures/*.aux
+presentation_latex/figures/*.log
+presentation_latex/figures/*.synctex.gz
+presentation_latex/figures/*.tex.bak

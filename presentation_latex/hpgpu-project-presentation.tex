@@ -57,8 +57,94 @@
 
 \section{Results} 
 \begin{frame}
-	\frametitle{Compare the memory structures}
+	\frametitle{Compare the memory structures - on K80}
+	\begin{columns}
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig1.pdf}
+	\small 16K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig2.pdf}
+	\small 32K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig3.pdf}
+	\small 64K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig4.pdf}
+	\small 128K
+	\end{column}	
+	\end{columns}
 	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Compare the memory structures - on v100}
+	\begin{columns}
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig10.pdf}
+	\small 16K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig20.pdf}
+	\small 32K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig30.pdf}
+	\small 64K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig40.pdf}
+	\small 128K
+	\end{column}	
+	\end{columns}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Compare the memory structures - on 1070}
+	\begin{columns}
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig100.pdf}
+	\small 16K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig200.pdf}
+	\small 32K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig300.pdf}
+	\small 64K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig400.pdf}
+	\small 128K
+	\end{column}	
+	\end{columns}
+	
+\end{frame}
+
+\section{Explanation}
+\begin{frame}
+	\frametitle{Why?}
+	Memory Layout:
+	\begin{itemize}
+		\item K80 - HBM
+		\item v100 - ...
+		\item 1070 - GDDR
+	\end{itemize}
 \end{frame}
 
 \end{document}

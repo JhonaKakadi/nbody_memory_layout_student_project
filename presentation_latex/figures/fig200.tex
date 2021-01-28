@@ -1,0 +1,39 @@
+\documentclass[12pt]{standalone}
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{pgfplots}
+\usepackage{amsmath, amsfonts, amssymb}
+\usetikzlibrary{shapes.geometric, arrows}
+
+\tikzstyle{node} = [rectangle]
+
+\newcommand{\comment}[1]{}
+
+% 32K on 1070
+\begin{document}
+\begin{tikzpicture}
+	\begin{axis}[
+		%ybar, ymin=0,
+		width=4cm, height=10cm,
+		ylabel={time of thread\_shared in ms},
+		symbolic x coords={AoS, SoA, AoSoA},
+		xtick=data,
+		yticklabel style={rotate=90},
+		ymin=0, ymax=150,
+		ytick={0,30,60,90,120,150},
+		ybar=5pt,
+		ymajorgrids=true,
+		grid style=dashed,
+		nodes near coords,
+		x tick label style={font=\small,text width=1cm,align=center}
+		]
+		
+    \addplot%+[only marks, mark=-]
+    	coordinates {    		
+    		(AoS, 0)
+    		(SoA, 0)
+    		(AoSoA, 0)
+    	};
+  \end{axis}
+\end{tikzpicture}
+\end{document}
