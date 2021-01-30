@@ -66,7 +66,7 @@
 				\item B: compute one particle per block
 				\item T: compute one particle per thread
 			\end{itemize}
-		\item We tested on K80 (Taurus), v100 (Taurus), 1070 (private, driver version 461.09), and RTX 2080 (private) respectively
+		\item We tested on several devices
 	\end{itemize}
 \end{frame}
 
@@ -94,6 +94,7 @@
 	\end{columns}
 	\medskip
 	\includegraphics[scale=0.50]{resources/128-1070-aos-update-t.png}
+	
 	\smallskip
 	\small tested on 1070; version 128k paricles on mem layout AoS; subversion T
 \end{frame}
@@ -115,10 +116,24 @@
 	\end{columns}
 	\smallskip
 	\includegraphics[scale=0.50]{resources/128-1070-aos-update-t-shared.png}
+	
 	\smallskip
 	\small tested on 1070; version 128k paricles on mem layout AoS; subversion T
 \end{frame}
 
+\begin{frame}
+	\frametitle{Compare the memory structures}
+	We tested on K80 (Taurus), v100 (Taurus), 1070 (private, driver version 461.09), and RTX 2080 (private, driver version 641.40) respectively
+	
+	\medskip
+	Memory Layout:
+	\begin{itemize}
+		\item K80 - GDDR 5 with SDRAM
+		\item v100 - HBM 2
+		\item 1070 - GDDR 5
+		\item RTX 2080 - GDDR 6
+	\end{itemize}
+\end{frame}
 
 \begin{frame}
 	\frametitle{Compare the memory structures - on K80}
@@ -227,24 +242,55 @@
 	
 \end{frame}
 
-\section{Explanation}
 \begin{frame}
-	\frametitle{Why?}
-	Memory Layout:
+	\frametitle{Conclusion}
 	\begin{itemize}
-		\item K80 - GDDR 5 with SDRAM
-		\item v100 - HBM 2
-		\item 1070 - GDDR 5
-		\item RTX 2080 - GDDR 6
+		\item AoSoA can be optimized, but ...
+		\item AoS or SoA heavily depends on architecture \(\rightarrow\) just take the easier implementation
 	\end{itemize}
 \end{frame}
+
+
+\section{Explanation}
+\begin{frame}
+	\frametitle{Performance of AoSoA on 16K}
+	\begin{itemize}
+		\item has nothing to do with the mem layout
+		\item SMs aren't fully occupied
+		\item we configured 32 threads per block
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{AoS vs SoA}
+	\begin{itemize}
+		\item performance AoS vs SoA are somewhat equally
+		\item contrary to facts from the lecture
+		\item K80, v100, and RTX 2080 have configurable L1 chaches
+		\item also read-only data cache for K80 (48KiB), for 1070 (24KiB) \(\rightarrow\) AoS behaves differently
+		\item that's the reason why AoS can be better than SoA (bigger chache)
+		\item at bigger  \(n\) AoS can't catch up
+	\end{itemize}
+\end{frame}
+
+
+\comment{
+\begin{frame}
+	\frametitle{General Performance}
+	\begin{itemize}
+		\item at small \(n <\) 1K CPU is usually faster
+	\end{itemize}
+\end{frame}
+} %end comment
+
 
 \section{Further Approaches}
 \begin{frame}
 	\frametitle{What else could we try?}
 	\begin{itemize}
-		\item use texture memory
+		\item use texture memory (indirectly we already do that)
 		\item change computation (not part of the task)
+		\item optimize AoSoA (not sure if it will be better compared to SoA)
 	\end{itemize}
 \end{frame}
 

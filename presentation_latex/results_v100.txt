@@ -8,6 +8,33 @@ One Block can handle: 1024 Threads
 While one Block can have the dimensions: X = 1024 Y = 1024 Z = 64
 And the grid can have the form of: X = 2147483647 Y = 65535 Z = 65535
 __________________________________________________________________________________
+16 k particles (448.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  move
+AoS                                     ------ms        ------ms        ------ms
+AoS                                     ------ms        ------ms        ------ms
+AoS                                     ------ms        ------ms        ------ms
+AoS                                     ------ms        ------ms        ------ms
+AoS                                     ------ms        ------ms        ------ms
+AVG:                                    40.4031ms       5.5916ms        ------ms
+
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  move
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+AVG:    7.54536ms       1.7973ms        5.88935ms       5.38595ms       ------ms
+
+Benchmarks:                             Thread,         Thread_shared,  move
+AoSoA                                   ------ms        ------ms        ------ms
+AoSoA                                   ------ms        ------ms        ------ms
+AoSoA                                   ------ms        ------ms        ------ms
+AoSoA                                   ------ms        ------ms        ------ms
+AoSoA                                   ------ms        ------ms        ------ms
+AVG:                                    3.1289ms        3.5872ms        ------ms
+
+
+
 32 k particles (896.000 kiB)
 Benchmarks:                             Thread,         Thread_shared,  move
 AoS                                     139.1923ms      9.7044ms        0.008192ms
@@ -59,3 +86,30 @@ AoSoA                                   20.1902ms       23.7701ms       0.163840
 AoSoA                                   20.1933ms       23.8725ms       0.166912ms
 AoSoA                                   20.2076ms       23.8766ms       0.171008ms
 AVG:                                    20.2031ms       23.8449ms       0.166912ms
+
+
+
+131 k particles (3584.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  move
+AoS                                     ------ms        ------ms        ------ms
+AoS                                     ------ms        ------ms        ------ms
+AoS                                     ------ms        ------ms        ------ms
+AoS                                     ------ms        ------ms        ------ms
+AoS                                     ------ms        ------ms        ------ms
+AVG:                                    2232.81ms       76.919ms        ------ms
+
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  move
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+SoA     -------ms       ------ms        -------ms       -------ms       ------ms
+AVG:    176.066ms       110.697ms       89.7097ms       81.5775ms       ------ms
+
+Benchmarks:                             Thread,         Thread_shared,  move
+AoSoA                                   ------ms        ------ms        ------ms
+AoSoA                                   ------ms        ------ms        ------ms
+AoSoA                                   ------ms        ------ms        ------ms
+AoSoA                                   ------ms        ------ms        ------ms
+AoSoA                                   ------ms        ------ms        ------ms
+AVG:                                    94.550ms        113.892ms       ------ms
