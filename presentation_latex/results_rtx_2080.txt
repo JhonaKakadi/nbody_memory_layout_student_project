@@ -1,0 +1,115 @@
+TESTED ON
+Name of Device: GeForce RTX 2080
+CC-Version is: 7.5
+SM-Count: 46
+Warp-size: 32
+One Block has 65536 Registers and one SM can handle 1024 Threads
+One Block can handle: 1024 Threads
+While one Block can have the dimensions: X = 1024 Y = 1024 Z = 64
+And the grid can have the form of: X = 2147483647 Y = 65535 Z = 65535
+___________________________________________________________________________________
+16 k particles (448.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  move
+AoS                                     6.0150ms        4.9380ms        0.005632ms
+AoS                                     6.7462ms        4.9356ms        0.006048ms
+AoS                                     6.5946ms        5.1752ms        0.005216ms
+AoS                                     6.0126ms        5.5993ms        0.006400ms
+AoS                                     6.0129ms        4.9346ms        0.005696ms
+AVG:                                    6.2762ms        5.1165ms        0.005798ms
+
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  move
+SoA     18.1470ms       4.0469ms        5.4775ms        5.0495ms        0.0040ms
+SoA     18.0043ms       4.3643ms        5.4765ms        5.4895ms        0.0044ms
+SoA     17.3978ms       4.0563ms        5.4801ms        5.4600ms        0.0045ms
+SoA     18.2924ms       4.0477ms        5.4732ms        5.4224ms        0.0043ms
+SoA     17.1953ms       4.0101ms        5.4227ms        5.4081ms        0.0045ms
+AVG:    17.8074ms       4.1051ms        5.4660ms        5.3670ms        0.004352ms
+
+Benchmarks:                             Thread,         Thread_shared,  move
+AoSoA                                   2.4931ms        3.9610ms        0.084192ms
+AoSoA                                   2.6970ms        3.9882ms        0.082304ms
+AoSoA                                   2.4912ms        3.9977ms        0.083552ms
+AoSoA                                   2.8485ms        4.0255ms        0.082176ms
+AoSoA                                   2.4927ms        3.9615ms        0.083968ms
+AVG:                                    2.6045ms        3.9868ms        0.083238ms
+
+
+
+32 k particles (896.000 kiB)
+Benchmarks:                            Thread,         Thread_shared,  move
+AoS                                    13.7963ms       9.9267ms        0.006784ms
+AoS                                    11.9968ms       10.6927ms       0.008416ms
+AoS                                    12.2684ms       10.4286ms       0.006880ms
+AoS                                    13.3455ms       10.1827ms       0.012288ms
+AoS                                    12.2596ms       10.4286ms       0.007680ms
+AVG:                                   12.7333ms       10.3318ms       0.008410ms
+
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  move
+SoA     38.4038ms       14.0491ms       11.0120ms       10.1485ms       0.0042ms
+SoA     35.5254ms       11.6970ms       9.2120ms        8.4494ms        0.0039ms
+SoA     31.9408ms       11.7128ms       9.2119ms        8.4489ms        0.0024ms
+SoA     31.1993ms       11.1483ms       8.7081ms        8.0019ms        0.0041ms
+SoA     30.5881ms       11.1084ms       8.7094ms        7.9872ms        0.0027ms
+AVG:    33.5315ms       11.9431ms       9.3707ms        8.6087ms        0.003469ms
+
+Benchmarks:                             Thread,         Thread_shared,  move
+AoSoA                                   10.1745ms       17.0948ms       0.178336ms
+AoSoA                                   10.3495ms       17.1203ms       0.180224ms
+AoSoA                                   10.7242ms       16.6556ms       0.175520ms
+AoSoA                                   10.1538ms       17.0680ms       0.184320ms
+AoSoA                                   10.1376ms       17.0532ms       0.176128ms
+AVG:                                    10.3079ms       16.9984ms       0.178906ms
+
+
+
+65 k particles (1792.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  move
+AoS                                     52.1213ms       39.4456ms       0.012288ms
+AoS                                     50.6940ms       38.2674ms       0.008960ms
+AoS                                     37.4325ms       31.7725ms       0.009184ms
+AoS                                     40.6771ms       31.1164ms       0.013888ms
+AoS                                     39.8512ms       31.1147ms       0.010176ms
+AVG:                                    44.1552ms       34.3433ms       0.010899ms
+
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  move
+SoA     79.1085ms       43.5934ms       36.8577ms       32.7580ms       0.0043ms
+SoA     79.2640ms       43.7305ms       37.0598ms       32.9769ms       0.0041ms
+SoA     80.4209ms       43.7842ms       36.8186ms       32.8520ms       0.0041ms
+SoA     79.1630ms       43.7494ms       36.8253ms       32.9689ms       0.0044ms
+SoA     79.6487ms       43.4934ms       36.6851ms       32.8212ms       0.0052ms
+AVG:    79.5210ms       43.6702ms       36.8493ms       32.8774ms       0.004422ms
+
+Benchmarks:                             Thread,         Thread_shared,  move
+AoSoA                                   34.9272ms       64.1766ms       0.357696ms
+AoSoA                                   34.9642ms       63.9078ms       0.364640ms
+AoSoA                                   34.7654ms       63.2075ms       0.368512ms
+AoSoA                                   34.5272ms       64.2443ms       0.364608ms
+AoSoA                                   35.3566ms       64.0724ms       0.364928ms
+AVG:                                    34.9081ms       63.9217ms       0.364077ms
+
+
+
+131 k particles (3584.000 kiB)
+Benchmarks:                             Thread,         Thread_shared,  move
+AoS                                     137.4203ms      95.1163ms       0.013856ms
+AoS                                     117.9385ms      95.9833ms       0.014336ms
+AoS                                     117.6530ms      95.7086ms       0.014336ms
+AoS                                     118.9416ms      96.0189ms       0.014336ms
+AoS                                     118.7645ms      96.1105ms       0.014304ms
+AVG:                                    122.1436ms      95.7875ms       0.014234ms
+
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  move
+SoA     215.8115ms      176.3792ms      109.3547ms      99.5840ms       0.0106ms
+SoA     216.4009ms      177.8406ms      110.8049ms      99.4755ms       0.0051ms
+SoA     216.4763ms      177.7050ms      109.4696ms      99.5575ms       0.0055ms
+SoA     217.6881ms      177.4136ms      109.8260ms      99.5659ms       0.0055ms
+SoA     216.9989ms      177.6415ms      109.5335ms      100.2217ms      0.0086ms
+AVG:    216.6751ms      177.3960ms      109.7978ms      99.6838ms       0.007072ms
+
+Benchmarks:                             Thread,         Thread_shared,  move
+AoSoA                                   128.7140ms      240.3594ms      0.746720ms
+AoSoA                                   129.2045ms      240.5365ms      0.733664ms
+AoSoA                                   127.5329ms      241.0989ms      0.729792ms
+AoSoA                                   129.5841ms      240.8378ms      0.724992ms
+AoSoA                                   129.1489ms      241.7357ms      0.746496ms
+AVG:                                    128.8369ms      240.9137ms      0.736333ms

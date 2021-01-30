@@ -61,22 +61,65 @@
 	\begin{itemize}
 		\item rewrite CPP-code in CUDA: implement AoS, SoA and AoSoA memory layouts
 		\item implemented \underline{shared memory} variants
-		\item for SoA: implemented two sub-variants: K and T
+		\item for SoA: implemented two sub-variants: B and T
 			\begin{itemize}
 				\item B: compute one particle per block
 				\item T: compute one particle per thread
 			\end{itemize}
+		\item We tested on K80 (Taurus), v100 (Taurus), and 1070 (private, driver version 461.09) respectively
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Example}
-	\tiny We tested on K80 (Taurus), v100 (Taurus), and 1070 (private, driver version 461.09) respectively
+	\frametitle{Example on K80}
 	\includegraphics[scale=0.5]{resources/data-example.png}
 \end{frame}
 
 
-\section{Results} 
+\section{Results}
+\begin{frame}
+	\frametitle{Used Profilers}
+	\begin{columns}
+	\begin{column}{0.3\textwidth}
+		\begin{itemize}
+			\item nvprof on Taurus
+		\end{itemize}
+	\end{column}
+	
+	\begin{column}{0.5\textwidth}
+		\begin{itemize}
+			\small \item Nvidia Visual Profiler version 11.2
+		\end{itemize}
+	\end{column}
+	\end{columns}
+	\bigskip
+	\includegraphics[scale=0.50]{resources/128-1070-aos-update-t.png}
+	
+	\small tested on 1070; version 128k paricles on mem layout AoS; subversion T
+\end{frame}
+
+\begin{frame}
+	\frametitle{Used Profilers}
+	\begin{columns}
+	\begin{column}{0.3\textwidth}
+		\begin{itemize}
+			\item nvprof on Taurus
+		\end{itemize}
+	\end{column}
+	
+	\begin{column}{0.5\textwidth}
+		\begin{itemize}
+			\item Nvidia Visual Profiler version 11.2
+		\end{itemize}
+	\end{column}
+	\end{columns}
+	\medskip
+	\includegraphics[scale=0.50]{resources/128-1070-aos-update-t-shared.png}
+	
+	\small tested on 1070; version 128k paricles on mem layout AoS; subversion T
+\end{frame}
+
+
 \begin{frame}
 	\frametitle{Compare the memory structures - on K80}
 	\begin{columns}
