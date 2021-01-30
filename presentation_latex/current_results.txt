@@ -17,7 +17,7 @@ AoS                                     50.7257ms       15.6060ms       0.032544
 AoS                                     50.7504ms       15.5858ms       0.032768ms
 AVG:                                    53.8807ms       16.3264ms       0.033754ms
 
-Benchmarks: Kernel,     Kernel_shared,  Thread,     	Thread_shared,  Move
+Benchmarks: Block,      Block_shared,   Thread,     	Thread_shared,  Move
 SoA     55.0906ms       21.4492ms       22.8277ms       14.2324ms       0.0110ms
 SoA     54.3634ms       21.4436ms       22.8197ms       13.0962ms       0.0083ms
 SoA     49.3135ms       19.3027ms       20.4029ms       12.7189ms       0.0083ms
@@ -44,7 +44,7 @@ AoS                                     147.7971ms      43.7835ms       0.033504
 AoS                                     142.6965ms      43.7882ms       0.031296ms
 AVG:                                    171.3872ms      49.4354ms       0.036774ms
 
-Benchmarks: Kernel,     Kernel_shared,  Thread,         Thread_shared,  Move
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  Move
 SoA     96.8798ms       59.1961ms       70.2886ms       44.4813ms       0.0099ms
 SoA     96.2717ms       59.4221ms       70.3054ms       44.5191ms       0.0111ms
 SoA     96.6742ms       59.1365ms       70.3160ms       44.4275ms       0.0110ms
@@ -71,7 +71,7 @@ AoS                                     564.9940ms      132.3905ms      0.056992
 AoS                                     565.9567ms      132.5669ms      0.050304ms
 AVG:                                    591.0646ms      132.6863ms      0.055194ms
 
-Benchmarks: Kernel,     Kernel_shared,  Thread,         Thread_shared,  Move
+Benchmarks:  Block,     Block_shared,   Thread,         Thread_shared,  Move
 SoA     263.6722ms      214.9559ms      213.8620ms      134.4376ms      0.0186ms
 SoA     264.3197ms      215.0839ms      213.8465ms      134.4751ms      0.0177ms
 SoA     264.4698ms      215.1121ms      213.8621ms      134.5255ms      0.0177ms
@@ -98,7 +98,7 @@ AoS                                     2164.0598ms     459.3103ms      0.099872
 AoS                                     2156.1831ms     459.4745ms      0.099712ms
 AVG:                                    2186.6223ms     459.1172ms      0.098016ms
 
-Benchmarks: Kernel,     Kernel_shared,  Thread,         Thread_shared,  Move
+Benchmarks:  Block,     Block_shared,   Thread,         Thread_shared,  Move
 SoA     901.4296ms      856.9327ms      739.2853ms      479.2048ms      0.0380ms
 SoA     913.0090ms      856.9944ms      740.3595ms      477.7679ms      0.0381ms
 SoA     917.3915ms      857.3723ms      741.7971ms      477.5698ms      0.0371ms
