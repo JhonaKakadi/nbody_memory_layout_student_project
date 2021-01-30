@@ -1,3 +1,4 @@
+TESTED ON
 Name of Device: GeForce GTX 1070
 CC-Version is: 6.1
 SM-Count: 15
@@ -6,16 +7,17 @@ One Block has 65536 Registers and one SM can handle 2048 Threads
 One Block can handle: 1024 Threads
 While one Block can have the dimensions: X = 1024 Y = 1024 Z = 64
 And the grid can have the form of: X = 2147483647 Y = 65535 Z = 65535
+_____________________________________________________________________________________
 32 k particles (896.000 kiB)
-Benchmarks: Thread,     Thread_shared,  move
-AoS     24.8770ms       19.6444ms       0.014336ms
-AoS     25.0348ms       19.4304ms       0.014336ms
-AoS     26.8780ms       20.3028ms       0.013312ms
-AoS     27.5907ms       19.9485ms       0.014336ms
-AoS     26.3127ms       18.6399ms       0.014336ms
-AVG:    26.1386ms       19.5932ms       0.014131ms
+Benchmarks:                             Thread,         Thread_shared,  move
+AoS                                     24.8770ms       19.6444ms       0.014336ms
+AoS                                     25.0348ms       19.4304ms       0.014336ms
+AoS                                     26.8780ms       20.3028ms       0.013312ms
+AoS                                     27.5907ms       19.9485ms       0.014336ms
+AoS                                     26.3127ms       18.6399ms       0.014336ms
+AVG:                                    26.1386ms       19.5932ms       0.014131ms
 
-Benchmarks: Kernel,     Kernel_shared,  Thread,         Thread_shared,  move
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  move
 SoA     42.0014ms       18.8180ms       32.4024ms       23.1240ms       0.0072ms
 SoA     48.1362ms       23.5418ms       37.4026ms       21.3862ms       0.0041ms
 SoA     46.1015ms       18.9809ms       33.4182ms       21.1517ms       0.0082ms
@@ -23,35 +25,26 @@ SoA     45.5281ms       19.7489ms       32.3174ms       21.8225ms       0.0072ms
 SoA     47.7809ms       20.3571ms       31.9662ms       20.2189ms       0.0041ms
 AVG:    45.9096ms       20.2893ms       33.5014ms       21.5435ms       0.006144ms
 
-Benchmarks: Thread,     Thread_shared,  move
-AoSoA   23.1598ms       28.2860ms       0.220160ms
-AoSoA   23.5643ms       27.7289ms       0.219136ms
-AoSoA   23.6810ms       27.3295ms       0.217088ms
-AoSoA   24.0865ms       26.1796ms       0.219136ms
-AoSoA   23.3603ms       25.3788ms       0.219136ms
-AVG:    23.5704ms       26.9806ms       0.218931ms
-[8:56 AM]
+Benchmarks:                             Thread,         Thread_shared,  move
+AoSoA                                   23.1598ms       28.2860ms       0.220160ms
+AoSoA                                   23.5643ms       27.7289ms       0.219136ms
+AoSoA                                   23.6810ms       27.3295ms       0.217088ms
+AoSoA                                   24.0865ms       26.1796ms       0.219136ms
+AoSoA                                   23.3603ms       25.3788ms       0.219136ms
+AVG:                                    23.5704ms       26.9806ms       0.218931ms
 
 
 
-Name of Device: GeForce GTX 1070
-CC-Version is: 6.1
-SM-Count: 15
-Warp-size: 32
-One Block has 65536 Registers and one SM can handle 2048 Threads
-One Block can handle: 1024 Threads
-While one Block can have the dimensions: X = 1024 Y = 1024 Z = 64
-And the grid can have the form of: X = 2147483647 Y = 65535 Z = 65535
 65 k particles (1792.000 kiB)
-Benchmarks: Thread,     Thread_shared,  move
-AoS     104.2572ms      84.8015ms       0.028672ms
-AoS     97.8555ms       74.3352ms       0.024576ms
-AoS     84.6019ms       67.3669ms       0.022528ms
-AoS     82.7972ms       62.8531ms       0.021504ms
-AoS     75.5354ms       62.8634ms       0.021504ms
-AVG:    89.0094ms       70.4440ms       0.023757ms
+Benchmarks:                             Thread,         Thread_shared,  move
+AoS                                     104.2572ms      84.8015ms       0.028672ms
+AoS                                     97.8555ms       74.3352ms       0.024576ms
+AoS                                     84.6019ms       67.3669ms       0.022528ms
+AoS                                     82.7972ms       62.8531ms       0.021504ms
+AoS                                     75.5354ms       62.8634ms       0.021504ms
+AVG:                                    89.0094ms       70.4440ms       0.023757ms
 
-Benchmarks: Kernel,     Kernel_shared,  Thread,         Thread_shared,  move
+Benchmarks: Block,      Block_shared,   Thread,         Thread_shared,  move
 SoA     94.4701ms       71.0164ms       95.5689ms       63.4931ms       0.0051ms
 SoA     91.8528ms       70.2935ms       94.0165ms       65.0650ms       0.0072ms
 SoA     91.7892ms       69.7405ms       94.1885ms       65.9282ms       0.0102ms
@@ -59,10 +52,10 @@ SoA     92.6013ms       69.7416ms       92.4119ms       65.3926ms       0.0082ms
 SoA     93.5726ms       69.9269ms       91.2804ms       64.1966ms       0.0061ms
 AVG:    92.8572ms       70.1438ms       93.4932ms       64.8194ms       0.007373ms
 
-Benchmarks: Thread,     Thread_shared,  move
-AoSoA   73.8877ms       89.1914ms       0.444416ms
-AoSoA   76.2854ms       89.8755ms       0.447488ms
-AoSoA   76.3023ms       89.8888ms       0.451584ms
-AoSoA   75.9501ms       88.4244ms       0.449536ms
-AoSoA   75.6178ms       89.1023ms       0.440320ms
-AVG:    75.6087ms       89.2965ms       0.446669ms
+Benchmarks:                             Thread,         Thread_shared,  move
+AoSoA                                   73.8877ms       89.1914ms       0.444416ms
+AoSoA                                   76.2854ms       89.8755ms       0.447488ms
+AoSoA                                   76.3023ms       89.8888ms       0.451584ms
+AoSoA                                   75.9501ms       88.4244ms       0.449536ms
+AoSoA                                   75.6178ms       89.1023ms       0.440320ms
+AVG:                                    75.6087ms       89.2965ms       0.446669ms
