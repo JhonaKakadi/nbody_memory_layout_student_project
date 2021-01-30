@@ -55,6 +55,13 @@
 	
 \end{frame}
 
+\begin{frame}
+	\frametitle{Recap: AoS vs SoA}
+	\includegraphics[scale=0.45]{resources/aos-vs-soa.png}
+	
+	\small from the slides 04-GPU-Memory
+\end{frame}
+
 \section{Solution Strategies}
 \begin{frame}
 	\frametitle{Solution Strategies}
@@ -265,12 +272,65 @@
 	\frametitle{AoS vs SoA}
 	\begin{itemize}
 		\item performance AoS vs SoA are somewhat equally
-		\item contrary to facts from the lecture
-		\item K80, v100, and RTX 2080 have configurable L1 chaches
-		\item also read-only data cache for K80 (48KiB), for 1070 (24KiB) \(\rightarrow\) AoS behaves differently
-		\item that's the reason why AoS can be better than SoA (bigger chache)
-		\item at bigger  \(n\) AoS can't catch up
+		\item contrary to facts from the lecture \(\rightarrow\) WHY?
+		\item K80, v100, and RTX 2080 have configurable L1 chaches (we chose 32KiB)
+		\item also read-only data cache for K80 (48KiB), for 1070 (no RODC) \(\rightarrow\) AoS behaves differently
+		\item that could be the reason why AoS can be better than SoA (bigger chache)
+		\item guess: at bigger  \(n\) AoS can't catch up? but ...
 	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{On v100 with 2 million particles}
+	\begin{columns}
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig30.pdf}
+	\small 64K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig40.pdf}
+	\small 128K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\large ...
+	\end{column}	
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig50.pdf}
+	\small 2M
+	\end{column}	
+	\end{columns}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{The Explanation?}
+	\begin{itemize}
+		\item we don't really know
+		\item cache hierarchy is dynamic and complex, e.g.
+	\end{itemize}
+	\bigskip
+	
+		\begin{tabular}{ |r|| c | c c| }
+			\hline
+			K80 & 48 RODC & dyn. 16-48 L1 & (it's 32 in our case)\\
+			\hline
+			V100 & 128 UDC & rest L1 & (it's 96 in our case)\\
+			\hline
+			RTX 2080 & 96 UDC & rest L1 & (it's 64 in our case)\\
+			\hline
+			1070 & -- RODC & 48 L1 &\\
+			\hline
+		\end{tabular}
+		
+	\small *values are given in KiB
+	\smallskip
+	
+	\small RODC ... read-only data cache
+	
+	\small UDC ... unified memory cache
 \end{frame}
 
 
@@ -289,8 +349,22 @@
 	\frametitle{What else could we try?}
 	\begin{itemize}
 		\item use texture memory (indirectly we already do that)
+		\begin{itemize}
+			\item \(\rightarrow\) mass never changes
+		\end{itemize}
+		\item use surface memory? tensor cores?
 		\item change computation (not part of the task)
 		\item optimize AoSoA (not sure if it will be better compared to SoA)
+	\end{itemize}
+\end{frame}
+
+\section{Validation}
+\begin{frame}
+	\frametitle{Validation}
+	Two ways:
+	\begin{itemize}
+		\item  \textbf{visualize} a 3-body problem with our code, see if it's right
+		\item  \textbf{compare} with reference computation (use reference values)
 	\end{itemize}
 \end{frame}
 
