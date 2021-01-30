@@ -66,7 +66,7 @@
 				\item B: compute one particle per block
 				\item T: compute one particle per thread
 			\end{itemize}
-		\item We tested on K80 (Taurus), v100 (Taurus), and 1070 (private, driver version 461.09) respectively
+		\item We tested on K80 (Taurus), v100 (Taurus), 1070 (private, driver version 461.09), and RTX 2080 (private) respectively
 	\end{itemize}
 \end{frame}
 
@@ -82,7 +82,7 @@
 	\begin{columns}
 	\begin{column}{0.3\textwidth}
 		\begin{itemize}
-			\item nvprof on Taurus
+			\small \item nvprof on Taurus
 		\end{itemize}
 	\end{column}
 	
@@ -92,9 +92,9 @@
 		\end{itemize}
 	\end{column}
 	\end{columns}
-	\bigskip
+	\medskip
 	\includegraphics[scale=0.50]{resources/128-1070-aos-update-t.png}
-	
+	\smallskip
 	\small tested on 1070; version 128k paricles on mem layout AoS; subversion T
 \end{frame}
 
@@ -103,19 +103,19 @@
 	\begin{columns}
 	\begin{column}{0.3\textwidth}
 		\begin{itemize}
-			\item nvprof on Taurus
+			\small \item nvprof on Taurus
 		\end{itemize}
 	\end{column}
 	
 	\begin{column}{0.5\textwidth}
 		\begin{itemize}
-			\item Nvidia Visual Profiler version 11.2
+			\small \item Nvidia Visual Profiler version 11.2
 		\end{itemize}
 	\end{column}
 	\end{columns}
-	\medskip
+	\smallskip
 	\includegraphics[scale=0.50]{resources/128-1070-aos-update-t-shared.png}
-	
+	\smallskip
 	\small tested on 1070; version 128k paricles on mem layout AoS; subversion T
 \end{frame}
 
@@ -200,6 +200,33 @@
 	
 \end{frame}
 
+
+\begin{frame}
+	\frametitle{Compare the memory structures - on RTX 2080}
+	\begin{columns}
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig1000.pdf}
+	\small 16K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig2000.pdf}
+	\small 32K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig3000.pdf}
+	\small 64K
+	\end{column}
+	%===========
+	\begin{column}{0.25\textwidth}
+	\includegraphics[scale=0.55]{figures/fig4000.pdf}
+	\small 128K
+	\end{column}	
+	\end{columns}
+	
+\end{frame}
+
 \section{Explanation}
 \begin{frame}
 	\frametitle{Why?}
@@ -208,6 +235,7 @@
 		\item K80 - GDDR 5 with SDRAM
 		\item v100 - HBM 2
 		\item 1070 - GDDR 5
+		\item RTX 2080 - GDDR 6
 	\end{itemize}
 \end{frame}
 
@@ -215,7 +243,6 @@
 \begin{frame}
 	\frametitle{What else could we try?}
 	\begin{itemize}
-		\item use shared (we did that)
 		\item use texture memory
 		\item change computation (not part of the task)
 	\end{itemize}
