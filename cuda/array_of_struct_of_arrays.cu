@@ -1,5 +1,7 @@
 #include "shared_header.h"
 
+#define PBLOCKS_PER_BLOCK 4
+
 struct particle_block        // deleted alignas(64)
 {
     struct {
@@ -43,50 +45,62 @@ __device__ inline void aosoa_pp_interaction(
 
 __global__ void aosoa_update_t_shared(particle_block *particles) {
     // TODO check for not multiple of 32
-    __shared__ particle_block mainBlock;
+    particle_block* mainBlock;
+    // __shared__ mainblocks[4]; // could be useful; test it 
     __shared__ particle_block otherBlock;
-    const int mainLane = threadIdx.x;
-    if (threadIdx.x == 0) {
-        mainBlock = particles[blockIdx.x];
-    }
+    const int mainLane = threadIdx.x % LANES;
+    const int offset = threadIdx.x / LANES;
+    float x_run = 0.0;
+    float y_run = 0.0;
+    float z_run = 0.0;
+    mainBlock = &(particles[PBLOCKS_PER_BLOCK * blockIdx.x + offset]);
+  
     for (int otherBlockIndex = 0; otherBlockIndex < BLOCKS; ++otherBlockIndex) {
-        otherBlock = particles[otherBlockIndex];
+        if (threadIdx.x == 0) {
+            otherBlock = particles[otherBlockIndex];
+        }
         SYNC_THREADS;
         for (int otherLane = 0; otherLane < LANES; ++otherLane) {
-            aosoa_pp_interaction(mainBlock.pos.x[mainLane],
-                          mainBlock.pos.y[mainLane],
-                          mainBlock.pos.z[mainLane],
-                          &mainBlock.vel.x[mainLane],
-                          &mainBlock.vel.y[mainLane],
-                          &mainBlock.vel.z[mainLane],
+            aosoa_pp_interaction(mainBlock->pos.x[mainLane],
+                          mainBlock->pos.y[mainLane],
+                          mainBlock->pos.z[mainLane],
+                          &x_run, &y_run, &z_run,
                           otherBlock.pos.x[otherLane],
                           otherBlock.pos.y[otherLane],
                           otherBlock.pos.z[otherLane],
                           otherBlock.mass[otherLane]);
         }
     }
+    mainBlock->vel.x[mainLane] += x_run;
+    mainBlock->vel.y[mainLane] += y_run;
+    mainBlock->vel.z[mainLane] += z_run;
 }
 
 __global__ void aosoa_update_t(particle_block *particles) {
     // TODO check for not multiple of 32
-    particle_block mainBlock = particles[blockIdx.x];
+    const int offset = threadIdx.x / LANES;
+    const int mainLane = threadIdx.x % LANES;
+    particle_block mainBlock = particles[PBLOCKS_PER_BLOCK * blockIdx.x + offset];
     particle_block otherBlock;
-    const int mainLane = threadIdx.x;
+    float x_run = 0.0;
+    float y_run = 0.0;
+    float z_run = 0.0;
     for (int otherBlockIndex = 0; otherBlockIndex < BLOCKS; ++otherBlockIndex) {
         otherBlock = particles[otherBlockIndex];
         for (int otherLane = 0; otherLane < LANES; ++otherLane) {
             aosoa_pp_interaction(mainBlock.pos.x[mainLane],
                           mainBlock.pos.y[mainLane],
                           mainBlock.pos.z[mainLane],
-                          &mainBlock.vel.x[mainLane],
-                          &mainBlock.vel.y[mainLane],
-                          &mainBlock.vel.z[mainLane],
+                          &x_run, &y_run, &z_run,
                           otherBlock.pos.x[otherLane],
                           otherBlock.pos.y[otherLane],
                           otherBlock.pos.z[otherLane],
                           otherBlock.mass[otherLane]);
         }
     }
+    mainBlock.vel.x[mainLane] += x_run;
+    mainBlock.vel.y[mainLane] += y_run;
+    mainBlock.vel.z[mainLane] += z_run;
 }
 
 // Todo find a way to use more threads per block and less blocks
@@ -168,11 +182,11 @@ void aosoa_run() {
     for (int i = 0; i < STEPS; ++i) {
         // call update
         HANDLE_ERROR(cudaEventRecord(start_update, 0));
-        aosoa_update_t<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
+        aosoa_update_t<<<(PROBLEMSIZE + (PBLOCKS_PER_BLOCK * LANES) - 1) / (PBLOCKS_PER_BLOCK * LANES), PBLOCKS_PER_BLOCK *LANES>>>(particle_block_device);
         HANDLE_ERROR(cudaEventRecord(stop_update, 0));
         
         HANDLE_ERROR(cudaEventRecord(start_update_shared, 0));
-        aosoa_update_t_shared<<<(PROBLEMSIZE + LANES - 1) / LANES, LANES>>>(particle_block_device);
+        aosoa_update_t_shared<<<(PROBLEMSIZE + (PBLOCKS_PER_BLOCK *LANES) - 1) / (PBLOCKS_PER_BLOCK *LANES), PBLOCKS_PER_BLOCK*LANES>>>(particle_block_device);
         HANDLE_ERROR(cudaEventRecord(stop_update_shared, 0));
 
         // call move

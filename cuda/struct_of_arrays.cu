@@ -22,7 +22,7 @@ soa_pp_interaction(const float posix, const float posiy, const float posiz,
 
 
 __global__ void
-soa_update_k(float* posx, float* posy, float* posz, float* velx, float* vely, float* velz, float* mass) {
+soa_update_b(float* posx, float* posy, float* posz, float* velx, float* vely, float* velz, float* mass) {
     // one kernel per particle
     // 1024 threads per particle
     // Todo choose good names for vars
@@ -48,7 +48,7 @@ soa_update_k(float* posx, float* posy, float* posz, float* velx, float* vely, fl
 
 
 __global__ void
-soa_update_k_shared(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass) {
+soa_update_b_shared(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass) {
     // one kernel per particle
     // 1024 threads per particle
     // Todo choose good names for vars
@@ -275,15 +275,15 @@ void soa_run() {
     float time_update_t;
     float time_update_t_shared;
 
-    printf("Benchmarks: Kernel, \tKernel_shared, \tThread, \tThread_shared, \tmove\n");
+    printf("Benchmarks: Block, \tBlock_shared, \tThread, \tThread_shared, \tmove\n");
     for (std::size_t s = 0; s < STEPS; ++s) {
 
         HANDLE_ERROR(cudaEventRecord(start_update_k, 0));
-        soa_update_k << <PROBLEMSIZE, 1024 >> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
+        soa_update_b << < PROBLEMSIZE, 1024 >> > (posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
         HANDLE_ERROR(cudaEventRecord(end_update_k, 0));
 
         HANDLE_ERROR(cudaEventRecord(start_update_k_shared, 0));
-        soa_update_k_shared <<<PROBLEMSIZE, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
+        soa_update_b_shared <<<PROBLEMSIZE, 1024>>>(posx_d, posy_d, posz_d, velx_d, vely_d, velz_d, mass_d);
         HANDLE_ERROR(cudaEventRecord(end_update_k_shared, 0));
 
         
